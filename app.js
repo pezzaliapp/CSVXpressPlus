@@ -6,6 +6,7 @@ if ('serviceWorker' in navigator) {
 }
 
 let listino = [];
+let articoliAggiunti = [];
 
 document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("csvFileInput").addEventListener("change", handleCSVUpload);
@@ -58,13 +59,35 @@ function aggiungiArticoloDaListino() {
   const select = document.getElementById("listinoSelect");
   if (!select.value) return;
   const articolo = listino[parseInt(select.value)];
+  
+  // Verifica se l'articolo è già stato aggiunto
+  if (articoliAggiunti.some(a => a.codice === articolo.codice)) {
+    alert("Questo articolo è già stato aggiunto.");
+    return;
+  }
+  
+  articoliAggiunti.push(articolo);
+  aggiornaTabellaArticoli();
+}
+
+function aggiornaTabellaArticoli() {
   const tableBody = document.querySelector("#articoli-table tbody");
-  const row = document.createElement("tr");
-  row.innerHTML = `
-    <td>${articolo.codice}</td>
-    <td>${articolo.descrizione}</td>
-    <td>${articolo.costoTrasporto}€</td>
-    <td>${articolo.costoInstallazione}€</td>
-  `;
-  tableBody.appendChild(row);
+  tableBody.innerHTML = "";
+  
+  articoliAggiunti.forEach((articolo, index) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${articolo.codice}</td>
+      <td>${articolo.descrizione}</td>
+      <td>${articolo.costoTrasporto}€</td>
+      <td>${articolo.costoInstallazione}€</td>
+      <td><button onclick="rimuoviArticolo(${index})">Rimuovi</button></td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+function rimuoviArticolo(index) {
+  articoliAggiunti.splice(index, 1);
+  aggiornaTabellaArticoli();
 }
