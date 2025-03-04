@@ -96,3 +96,11 @@ function aggiornaTabellaArticoli() {
     tableBody.appendChild(row);
   });
 }
+
+function aggiornaCalcoli(index) {
+  articoliAggiunti[index].sconto = parseFloat(document.querySelector(`#articoli-table tbody tr:nth-child(${index + 1}) td:nth-child(4) input`).value) || 0;
+  articoliAggiunti[index].margine = parseFloat(document.querySelector(`#articoli-table tbody tr:nth-child(${index + 1}) td:nth-child(5) input`).value) || 0;
+  articoliAggiunti[index].costoTrasporto = parseFloat(document.querySelector(`#articoli-table tbody tr:nth-child(${index + 1}) td:nth-child(7) input`).value) || 0;
+  articoliAggiunti[index].costoInstallazione = parseFloat(document.querySelector(`#articoli-table tbody tr:nth-child(${index + 1}) td:nth-child(8) input`).value) || 0;
+  aggiornaTabellaArticoli();
+}
