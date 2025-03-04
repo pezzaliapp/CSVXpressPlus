@@ -58,6 +58,20 @@ function aggiornaListinoSelect() {
   });
 }
 
+function aggiungiArticoloDaListino() {
+  const select = document.getElementById("listinoSelect");
+  if (!select.value) return;
+  const articolo = listino.find(item => item.codice === select.value);
+  
+  if (!articolo) {
+    alert("Errore: articolo non trovato nel listino.");
+    return;
+  }
+  
+  articoliAggiunti.push({ ...articolo });
+  aggiornaTabellaArticoli();
+}
+
 function aggiornaTabellaArticoli() {
   const tableBody = document.querySelector("#articoli-table tbody");
   tableBody.innerHTML = "";
@@ -81,13 +95,4 @@ function aggiornaTabellaArticoli() {
     `;
     tableBody.appendChild(row);
   });
-}
-
-function aggiornaCalcoli(index) {
-  const row = document.querySelector(`#articoli-table tbody tr:nth-child(${index + 1})`);
-  articoliAggiunti[index].sconto = row.children[3].children[0].value;
-  articoliAggiunti[index].margine = row.children[4].children[0].value;
-  articoliAggiunti[index].costoTrasporto = row.children[6].children[0].value;
-  articoliAggiunti[index].costoInstallazione = row.children[7].children[0].value;
-  aggiornaTabellaArticoli();
 }
