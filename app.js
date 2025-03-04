@@ -1,22 +1,17 @@
 // =====================================================
-// 0) REGISTRAZIONE DEL SERVICE WORKER
+// Variabile globale per i dati del listino CSV
 // =====================================================
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js')
-      .then(registration => {
-        console.log('Service Worker registrato con successo:', registration);
-      })
-      .catch(error => {
-        console.error('Registrazione Service Worker fallita:', error);
-      });
-  });
-}
+let listino = [];
 
 // =====================================================
-// VARIABILI GLOBALI
+// Event Listener per l'inizializzazione della pagina
 // =====================================================
-let listino = []; // Conterrà i dati importati dal CSV
+document.addEventListener("DOMContentLoaded", function () {
+  // Se hai altre funzioni (es. per i preventivi) puoi chiamarle qui:
+  // caricaPreventiviSalvati();
+  // aggiornaTotaleGenerale();
+  initCSVImport();
+});
 
 // =====================================================
 // 1) FUNZIONI DI PARSING/FORMATTAZIONE ALL'ITALIANA
@@ -52,25 +47,32 @@ function formatNumberITA(num) {
 // =====================================================
 function initCSVImport() {
   const fileInput = document.getElementById("csvFileInput");
-  if (!fileInput) return;
+  if (!fileInput) {
+    console.error("Elemento 'csvFileInput' non trovato.");
+    return;
+  }
 
-  // Al cambio del file CSV, usiamo PapaParse
   fileInput.addEventListener("change", function(e) {
     const file = e.target.files[0];
+    console.log("File selezionato:", file);
     if (!file) return;
 
     Papa.parse(file, {
-      // Se il tuo CSV utilizza il punto e virgola come delimitatore, decommenta la seguente riga:
+      // Se il CSV utilizza il punto e virgola come delimitatore, decommenta la seguente riga:
       // delimiter: ';',
       // Se il CSV è separato da tab, decommenta la seguente riga:
       // delimiter: "\t",
-      header: false,         // Non usiamo l'header automatico; saltiamo manualmente la prima riga
-      skipEmptyLines: true,  // Salta le righe vuote
+      header: false,         // Gestiamo manualmente l'header
+      skipEmptyLines: true,
       complete: function(results) {
         console.log("Risultati PapaParse:", results.data);
+        if (!results.data || results.data.length === 0) {
+          console.error("Nessun dato trovato nel CSV.");
+          return;
+        }
         // Mappiamo i dati: saltiamo la prima riga (header) e leggiamo le prime 5 colonne
         listino = results.data.map((row, idx) => {
-          if (idx === 0) return null; // Saltiamo l'header
+          if (idx === 0) return null; // Salta la riga di header
           return {
             codice: (row[0] || "").trim(),
             descrizione: (row[1] || "").trim(),
@@ -88,7 +90,7 @@ function initCSVImport() {
     });
   });
 
-  // Quando l'utente digita nel campo di ricerca, aggiorniamo la select
+  // Aggiorna la select in tempo reale quando l'utente digita nel campo di ricerca
   const searchInput = document.getElementById("searchListino");
   if (searchInput) {
     searchInput.addEventListener("input", function() {
@@ -104,20 +106,19 @@ function aggiornaListinoSelect() {
   const select = document.getElementById("listinoSelect");
   const searchTerm = document.getElementById("searchListino").value.toLowerCase();
   if (!select) return;
-  
   select.innerHTML = "";
 
-  // Filtro sugli articoli del listino
+  // Filtra gli articoli in base a codice o descrizione
   const filtered = listino.filter(item => {
     const codice = item.codice.toLowerCase();
     const desc = item.descrizione.toLowerCase();
     return codice.includes(searchTerm) || desc.includes(searchTerm);
   });
 
-  // Popoliamo la select con i risultati filtrati
+  // Popola la select con le opzioni filtrate
   filtered.forEach((item, index) => {
     const option = document.createElement("option");
-    option.value = index; 
+    option.value = index;
     option.textContent = `${item.codice} - ${item.descrizione} - €${item.prezzoLordo}`;
     select.appendChild(option);
   });
@@ -130,7 +131,7 @@ function aggiungiArticoloDaListino() {
   const select = document.getElementById("listinoSelect");
   if (!select || !select.value) return;
 
-  // Rifacciamo lo stesso filtro usato per popolare la select
+  // Filtra di nuovo in base al termine di ricerca
   const searchTerm = document.getElementById("searchListino").value.toLowerCase();
   const filtered = listino.filter(item => {
     const codice = item.codice.toLowerCase();
@@ -138,11 +139,10 @@ function aggiungiArticoloDaListino() {
     return codice.includes(searchTerm) || desc.includes(searchTerm);
   });
 
-  // Prendiamo l'elemento selezionato
   const item = filtered[parseInt(select.value)];
   if (!item) return;
 
-  // Creiamo l'oggetto compatibile per aggiungere l'articolo
+  // Crea l'oggetto articolo
   const datiArticolo = {
     codice: item.codice,
     descrizione: item.descrizione,
@@ -162,7 +162,6 @@ function aggiungiArticoloDaListino() {
 function aggiungiArticolo() {
   const container = document.getElementById("articoli-container");
   if (!container) return;
-
   const idUnico = Date.now();
   const div = document.createElement("div");
   div.classList.add("articolo");
@@ -200,7 +199,6 @@ function aggiungiArticolo() {
 function aggiungiArticoloConDati(dati) {
   const container = document.getElementById("articoli-container");
   if (!container) return;
-
   const idUnico = Date.now() + Math.floor(Math.random() * 1000);
   const div = document.createElement("div");
   div.classList.add("articolo");
@@ -270,7 +268,6 @@ function calcolaPrezzo(input) {
   const row = input.closest(".articolo");
   if (!row) return;
 
-  // Interpretiamo come numeri in stile it-IT
   let prezzoLordo = parseNumberITA(row.querySelector(".prezzoLordo").value);
   let sconto      = parseFloat(row.querySelector(".sconto").value) || 0;
   let quantita    = parseNumberITA(row.querySelector(".quantita").value);
@@ -278,12 +275,10 @@ function calcolaPrezzo(input) {
   const prezzoNettoEl = row.querySelector(".prezzoNetto");
   let prezzoNetto     = parseNumberITA(prezzoNettoEl.value);
 
-  // Se l'input è Prezzo Lordo o Sconto, ricalcoliamo Prezzo Netto
   if (input.classList.contains("prezzoLordo") || input.classList.contains("sconto")) {
     prezzoNetto = prezzoLordo * (1 - sconto / 100);
     prezzoNettoEl.value = formatNumberITA(prezzoNetto);
   }
-  // Se l'input è Prezzo Netto, usiamo il valore digitato manualmente
   const manualNetto = parseNumberITA(prezzoNettoEl.value) || 0;
   let prezzoTotale = manualNetto * quantita;
   row.querySelector(".prezzoTotale").value = formatNumberITA(prezzoTotale);
@@ -324,7 +319,6 @@ function calcolaMarginalita() {
 function calcolaTotaleFinale() {
   const trasportoVal     = document.getElementById("costoTrasporto").value;
   const installazioneVal = document.getElementById("costoInstallazione").value;
-
   let trasportoNum      = parseNumberITA(trasportoVal);
   let installazioneNum  = parseNumberITA(installazioneVal);
 
