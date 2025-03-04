@@ -31,8 +31,8 @@ function handleCSVUpload(event) {
         prezzoLordo: parseFloat(row["PrezzoLordo"]?.trim()) || 0,
         sconto: "",
         margine: "",
-        costoTrasporto: "",
-        costoInstallazione: ""
+        costoTrasporto: parseFloat(row["CostoTrasporto"]?.trim()) || 0,
+        costoInstallazione: parseFloat(row["CostoInstallazione"]?.trim()) || 0
       }));
       aggiornaListinoSelect();
     },
@@ -98,6 +98,15 @@ function aggiornaTabellaArticoli() {
 }
 
 function aggiornaCalcoli(index) {
-  articoliAggiunti[index].sconto = document.querySelector(`#articoli-table tbody tr:nth-child(${index + 1}) td:nth-child(4) input`).value;
+  const row = document.querySelector(`#articoli-table tbody tr:nth-child(${index + 1})`);
+  articoliAggiunti[index].sconto = row.children[3].children[0].value;
+  articoliAggiunti[index].margine = row.children[4].children[0].value;
+  articoliAggiunti[index].costoTrasporto = row.children[6].children[0].value;
+  articoliAggiunti[index].costoInstallazione = row.children[7].children[0].value;
+  aggiornaTabellaArticoli();
+}
+
+function rimuoviArticolo(index) {
+  articoliAggiunti.splice(index, 1);
   aggiornaTabellaArticoli();
 }
