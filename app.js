@@ -1,6 +1,6 @@
-// -----------------------------------------------------
-// 0) REGISTRAZIONE SERVICE WORKER
-// -----------------------------------------------------
+// =====================================================
+// 0) REGISTRAZIONE DEL SERVICE WORKER
+// =====================================================
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('service-worker.js')
@@ -13,14 +13,14 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// -----------------------------------------------------
+// =====================================================
 // VARIABILI GLOBALI
-// -----------------------------------------------------
-let listino = [];  // Conterrà i dati importati dal CSV
+// =====================================================
+let listino = []; // Conterrà i dati importati dal CSV
 
-// -----------------------------------------------------
+// =====================================================
 // 1) FUNZIONI DI PARSING/FORMATTAZIONE ALL'ITALIANA
-// -----------------------------------------------------
+// =====================================================
 
 /** 
  * parseNumberITA(str)
@@ -28,9 +28,9 @@ let listino = [];  // Conterrà i dati importati dal CSV
  */
 function parseNumberITA(str) {
   if (!str) return 0;
-  let pulito = str.replace(/[^\d.,-]/g, "");  // Elimina simboli non numerici
-  pulito = pulito.replace(/\./g, "");          // Rimuove i punti
-  pulito = pulito.replace(",", ".");           // Virgola -> Punto
+  let pulito = str.replace(/[^\d.,-]/g, ""); // Elimina simboli non numerici
+  pulito = pulito.replace(/\./g, "");         // Rimuove i punti
+  pulito = pulito.replace(",", ".");          // Virgola -> Punto
   let val = parseFloat(pulito);
   return isNaN(val) ? 0 : val;
 }
@@ -47,9 +47,9 @@ function formatNumberITA(num) {
   }).format(num);
 }
 
-// -----------------------------------------------------
+// =====================================================
 // 2) INIZIALIZZAZIONE IMPORT CSV
-// -----------------------------------------------------
+// =====================================================
 function initCSVImport() {
   const fileInput = document.getElementById("csvFileInput");
   if (!fileInput) return;
@@ -60,12 +60,14 @@ function initCSVImport() {
     if (!file) return;
 
     Papa.parse(file, {
-      delimiter: "\t",        // Usa il delimitatore tab, se le colonne sono separate da tabulazioni
-      header: false,          // Poiché stiamo gestendo manualmente l'header (saltiamo la prima riga)
-      skipEmptyLines: true,   // Salta le righe vuote
+      // Se il tuo CSV utilizza il punto e virgola come delimitatore, decommenta la seguente riga:
+      // delimiter: ';',
+      // Se il CSV è separato da tab, decommenta la seguente riga:
+      // delimiter: "\t",
+      header: false,         // Non usiamo l'header automatico; saltiamo manualmente la prima riga
+      skipEmptyLines: true,  // Salta le righe vuote
       complete: function(results) {
         console.log("Risultati PapaParse:", results.data);
-
         // Mappiamo i dati: saltiamo la prima riga (header) e leggiamo le prime 5 colonne
         listino = results.data.map((row, idx) => {
           if (idx === 0) return null; // Saltiamo l'header
@@ -77,7 +79,6 @@ function initCSVImport() {
             costoTrasporto: (row[4] || "").trim()
           };
         }).filter(Boolean);
-
         console.log("CSV importato, elementi:", listino.length);
         aggiornaListinoSelect();
       },
@@ -87,7 +88,7 @@ function initCSVImport() {
     });
   });
 
-  // Quando digitiamo nel campo di ricerca, aggiorniamo la select
+  // Quando l'utente digita nel campo di ricerca, aggiorniamo la select
   const searchInput = document.getElementById("searchListino");
   if (searchInput) {
     searchInput.addEventListener("input", function() {
@@ -96,7 +97,9 @@ function initCSVImport() {
   }
 }
 
+// =====================================================
 // Aggiorna il menù a tendina filtrato
+// =====================================================
 function aggiornaListinoSelect() {
   const select = document.getElementById("listinoSelect");
   const searchTerm = document.getElementById("searchListino").value.toLowerCase();
@@ -120,7 +123,9 @@ function aggiornaListinoSelect() {
   });
 }
 
+// =====================================================
 // Al click su "Aggiungi Articolo Selezionato"
+// =====================================================
 function aggiungiArticoloDaListino() {
   const select = document.getElementById("listinoSelect");
   if (!select || !select.value) return;
@@ -137,7 +142,7 @@ function aggiungiArticoloDaListino() {
   const item = filtered[parseInt(select.value)];
   if (!item) return;
 
-  // Creiamo l'oggetto compatibile con aggiungiArticoloConDati
+  // Creiamo l'oggetto compatibile per aggiungere l'articolo
   const datiArticolo = {
     codice: item.codice,
     descrizione: item.descrizione,
@@ -148,21 +153,12 @@ function aggiungiArticoloDaListino() {
     prezzoTotale: ""
   };
 
-  // Aggiungiamo la "riga" articolo con i dati
   aggiungiArticoloConDati(datiArticolo);
 }
 
-// -----------------------------------------------------
-// 3) INIZIALIZZAZIONE DELLA PAGINA
-// -----------------------------------------------------
-document.addEventListener("DOMContentLoaded", () => {
-  initCSVImport();
-  // Altri event listener possono essere aggiunti qui
-});
-
-// -----------------------------------------------------
-// 4) GESTIONE ARTICOLI
-// -----------------------------------------------------
+// =====================================================
+// 3) GESTIONE ARTICOLI
+// =====================================================
 function aggiungiArticolo() {
   const container = document.getElementById("articoli-container");
   if (!container) return;
@@ -267,17 +263,17 @@ function rimuoviArticolo(btn) {
   aggiornaTotaleGenerale();
 }
 
-// -----------------------------------------------------
-// 5) CALCOLO PREZZI ARTICOLO
-// -----------------------------------------------------
+// =====================================================
+// 4) CALCOLO PREZZI ARTICOLO
+// =====================================================
 function calcolaPrezzo(input) {
   const row = input.closest(".articolo");
   if (!row) return;
 
   // Interpretiamo come numeri in stile it-IT
   let prezzoLordo = parseNumberITA(row.querySelector(".prezzoLordo").value);
-  let sconto       = parseFloat(row.querySelector(".sconto").value) || 0;
-  let quantita     = parseNumberITA(row.querySelector(".quantita").value);
+  let sconto      = parseFloat(row.querySelector(".sconto").value) || 0;
+  let quantita    = parseNumberITA(row.querySelector(".quantita").value);
 
   const prezzoNettoEl = row.querySelector(".prezzoNetto");
   let prezzoNetto     = parseNumberITA(prezzoNettoEl.value);
@@ -285,10 +281,8 @@ function calcolaPrezzo(input) {
   // Se l'input è Prezzo Lordo o Sconto, ricalcoliamo Prezzo Netto
   if (input.classList.contains("prezzoLordo") || input.classList.contains("sconto")) {
     prezzoNetto = prezzoLordo * (1 - sconto / 100);
-    // Sovrascriviamo il Prezzo Netto col valore formattato
     prezzoNettoEl.value = formatNumberITA(prezzoNetto);
   }
-
   // Se l'input è Prezzo Netto, usiamo il valore digitato manualmente
   const manualNetto = parseNumberITA(prezzoNettoEl.value) || 0;
   let prezzoTotale = manualNetto * quantita;
@@ -297,55 +291,44 @@ function calcolaPrezzo(input) {
   aggiornaTotaleGenerale();
 }
 
-// -----------------------------------------------------
-// 6) CALCOLO TOTALI (Articoli, Margine, Trasporto, etc.)
-// -----------------------------------------------------
+// =====================================================
+// 5) CALCOLO TOTALI (Articoli, Margine, Trasporto, etc.)
+// =====================================================
 function aggiornaTotaleGenerale() {
   let totaleGenerale = 0;
   document.querySelectorAll(".prezzoTotale").forEach(input => {
     totaleGenerale += parseNumberITA(input.value);
   });
-  const divTotaleArticoli = document.getElementById("totaleArticoli");
-  if (divTotaleArticoli) {
-    divTotaleArticoli.textContent = `Totale Articoli: ${formatNumberITA(totaleGenerale)}€`;
-  }
+  document.getElementById("totaleArticoli").textContent =
+    `Totale Articoli: ${formatNumberITA(totaleGenerale)}€`;
   calcolaMarginalita();
 }
 
 function calcolaMarginalita() {
-  const divTotaleArticoli = document.getElementById("totaleArticoli");
-  const testoTotale = divTotaleArticoli ? divTotaleArticoli.textContent : "0";
+  const testoTotale = document.getElementById("totaleArticoli").textContent;
   let match = testoTotale.match(/([\d.,]+)/);
   let totaleArticoli = 0;
   if (match) {
     totaleArticoli = parseNumberITA(match[1]);
   }
-
-  const margineInput = document.getElementById("margine");
-  const margine = parseFloat(margineInput ? margineInput.value : 0) || 0;
-
+  const margine = parseFloat(document.getElementById("margine").value) || 0;
   let nuovoTotale = totaleArticoli;
   if (margine > 0) {
     nuovoTotale = totaleArticoli / (1 - margine / 100);
   }
-
-  const divTotaleMarginalita = document.getElementById("totaleMarginalita");
-  if (divTotaleMarginalita) {
-    divTotaleMarginalita.textContent = `Nuovo Totale Articoli: ${formatNumberITA(nuovoTotale)}€`;
-  }
-
+  document.getElementById("totaleMarginalita").textContent =
+    `Nuovo Totale Articoli: ${formatNumberITA(nuovoTotale)}€`;
   calcolaTotaleFinale();
 }
 
 function calcolaTotaleFinale() {
-  const trasportoVal     = document.getElementById("costoTrasporto")?.value || "0";
-  const installazioneVal = document.getElementById("costoInstallazione")?.value || "0";
+  const trasportoVal     = document.getElementById("costoTrasporto").value;
+  const installazioneVal = document.getElementById("costoInstallazione").value;
 
   let trasportoNum      = parseNumberITA(trasportoVal);
   let installazioneNum  = parseNumberITA(installazioneVal);
 
-  const divTotaleMarginalita = document.getElementById("totaleMarginalita");
-  const testoMarginalita = divTotaleMarginalita ? divTotaleMarginalita.textContent : "0";
+  const testoMarginalita = document.getElementById("totaleMarginalita").textContent;
   let match = testoMarginalita.match(/([\d.,]+)/);
   let nuovoTotale = 0;
   if (match) {
@@ -353,8 +336,6 @@ function calcolaTotaleFinale() {
   }
 
   let finale = nuovoTotale + trasportoNum + installazioneNum;
-  const divTotaleFinale = document.getElementById("totaleFinale");
-  if (divTotaleFinale) {
-    divTotaleFinale.textContent = `Totale Finale: ${formatNumberITA(finale)}€`;
-  }
+  document.getElementById("totaleFinale").textContent =
+    `Totale Finale: ${formatNumberITA(finale)}€`;
 }
