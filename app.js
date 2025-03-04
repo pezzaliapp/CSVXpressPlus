@@ -28,11 +28,11 @@ function handleCSVUpload(event) {
       listino = results.data.map(row => ({
         codice: row["Codice"]?.trim() || "",
         descrizione: row["Descrizione"]?.trim() || "",
-        prezzoLordo: row["PrezzoLordo"]?.trim() || "0",
-        sconto: "0",
-        margine: "0",
-        costoTrasporto: row["CostoTrasporto"]?.trim() || "0",
-        costoInstallazione: row["CostoInstallazione"]?.trim() || "0"
+        prezzoLordo: parseFloat(row["PrezzoLordo"]?.trim()) || 0,
+        sconto: 0,
+        margine: 0,
+        costoTrasporto: 0,
+        costoInstallazione: 0
       }));
       aggiornaListinoSelect();
     },
@@ -68,10 +68,10 @@ function aggiungiArticoloDaListino() {
     return;
   }
   
-  if (articoliAggiunti.some(a => a.codice === articolo.codice)) {
-    alert("Questo articolo è già stato aggiunto.");
-    return;
-  }
+  articolo.sconto = 0;
+  articolo.margine = 0;
+  articolo.costoTrasporto = 0;
+  articolo.costoInstallazione = 0;
   
   articoliAggiunti.push(articolo);
   aggiornaTabellaArticoli();
@@ -82,19 +82,19 @@ function aggiornaTabellaArticoli() {
   tableBody.innerHTML = "";
   
   articoliAggiunti.forEach((articolo, index) => {
-    const totale = parseFloat(articolo.prezzoLordo) * (1 - parseFloat(articolo.sconto) / 100);
-    const granTotale = totale + parseFloat(articolo.costoTrasporto) + parseFloat(articolo.costoInstallazione);
+    const totale = articolo.prezzoLordo * (1 - articolo.sconto / 100);
+    const granTotale = totale / (1 - articolo.margine / 100) + articolo.costoTrasporto + articolo.costoInstallazione;
     
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${articolo.codice}</td>
       <td>${articolo.descrizione}</td>
-      <td>${articolo.prezzoLordo}€</td>
-      <td>${articolo.sconto}%</td>
-      <td>${articolo.margine}%</td>
+      <td><input type="number" value="${articolo.prezzoLordo}" disabled></td>
+      <td><input type="number" value="${articolo.sconto}" oninput="aggiornaCalcoli(${index})"></td>
+      <td><input type="number" value="${articolo.margine}" oninput="aggiornaCalcoli(${index})"></td>
       <td>${totale.toFixed(2)}€</td>
-      <td>${articolo.costoTrasporto}€</td>
-      <td>${articolo.costoInstallazione}€</td>
+      <td><input type="number" value="${articolo.costoTrasporto}" oninput="aggiornaCalcoli(${index})"></td>
+      <td><input type="number" value="${articolo.costoInstallazione}" oninput="aggiornaCalcoli(${index})"></td>
       <td>${granTotale.toFixed(2)}€</td>
       <td><button onclick="rimuoviArticolo(${index})">Rimuovi</button></td>
     `;
@@ -102,7 +102,10 @@ function aggiornaTabellaArticoli() {
   });
 }
 
-function rimuoviArticolo(index) {
-  articoliAggiunti.splice(index, 1);
+function aggiornaCalcoli(index) {
+  articoliAggiunti[index].sconto = parseFloat(event.target.parentElement.parentElement.children[3].children[0].value) || 0;
+  articoliAggiunti[index].margine = parseFloat(event.target.parentElement.parentElement.children[4].children[0].value) || 0;
+  articoliAggiunti[index].costoTrasporto = parseFloat(event.target.parentElement.parentElement.children[6].children[0].value) || 0;
+  articoliAggiunti[index].costoInstallazione = parseFloat(event.target.parentElement.parentElement.children[7].children[0].value) || 0;
   aggiornaTabellaArticoli();
 }
