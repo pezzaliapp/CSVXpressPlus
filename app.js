@@ -29,8 +29,8 @@ let listino = [];  // Conterrà i dati importati dal CSV
 function parseNumberITA(str) {
   if (!str) return 0;
   let pulito = str.replace(/[^\d.,-]/g, "");  // Elimina simboli non numerici
-  pulito = pulito.replace(/\./g, "");         // Rimuove i punti
-  pulito = pulito.replace(",", ".");          // Virgola -> Punto
+  pulito = pulito.replace(/\./g, "");          // Rimuove i punti
+  pulito = pulito.replace(",", ".");           // Virgola -> Punto
   let val = parseFloat(pulito);
   return isNaN(val) ? 0 : val;
 }
@@ -60,31 +60,27 @@ function initCSVImport() {
     if (!file) return;
 
     Papa.parse(file, {
-      // Se il CSV usa il punto e virgola come delimitatore, decommenta la riga seguente:
-      // delimiter: ';',
-      header: true,         // Legge la prima riga come intestazioni
-      skipEmptyLines: true, // Salta le righe vuote
-
+      delimiter: "\t",        // Usa il delimitatore tab, se le colonne sono separate da tabulazioni
+      header: false,          // Poiché stiamo gestendo manualmente l'header (saltiamo la prima riga)
+      skipEmptyLines: true,   // Salta le righe vuote
       complete: function(results) {
-        console.log("Risultati PapaParse:", results.data); // Debug
+        console.log("Risultati PapaParse:", results.data);
 
-        // Mappiamo i campi del CSV: Codice, Descrizione, PrezzoLordo, CostoInstallazione, CostoTrasporto
-        listino = results.data.map(row => {
-          // Se non esiste il Codice, scartiamo la riga
-          if (!row.Codice) return null;
+        // Mappiamo i dati: saltiamo la prima riga (header) e leggiamo le prime 5 colonne
+        listino = results.data.map((row, idx) => {
+          if (idx === 0) return null; // Saltiamo l'header
           return {
-            codice: (row.Codice || "").trim(),
-            descrizione: (row.Descrizione || "").trim(),
-            prezzoLordo: (row.PrezzoLordo || "").trim(),
-            costoInstallazione: (row.CostoInstallazione || "").trim(),
-            costoTrasporto: (row.CostoTrasporto || "").trim()
+            codice: (row[0] || "").trim(),
+            descrizione: (row[1] || "").trim(),
+            prezzoLordo: (row[2] || "").trim(),
+            costoInstallazione: (row[3] || "").trim(),
+            costoTrasporto: (row[4] || "").trim()
           };
         }).filter(Boolean);
 
         console.log("CSV importato, elementi:", listino.length);
         aggiornaListinoSelect();
       },
-
       error: function(err) {
         console.error("Errore nel parsing del CSV:", err);
       }
@@ -103,15 +99,15 @@ function initCSVImport() {
 // Aggiorna il menù a tendina filtrato
 function aggiornaListinoSelect() {
   const select = document.getElementById("listinoSelect");
-  const searchTerm = (document.getElementById("searchListino").value || "").toLowerCase();
+  const searchTerm = document.getElementById("searchListino").value.toLowerCase();
   if (!select) return;
-
+  
   select.innerHTML = "";
 
   // Filtro sugli articoli del listino
   const filtered = listino.filter(item => {
-    const codice = (item.codice || "").toLowerCase();
-    const desc = (item.descrizione || "").toLowerCase();
+    const codice = item.codice.toLowerCase();
+    const desc = item.descrizione.toLowerCase();
     return codice.includes(searchTerm) || desc.includes(searchTerm);
   });
 
@@ -119,7 +115,6 @@ function aggiornaListinoSelect() {
   filtered.forEach((item, index) => {
     const option = document.createElement("option");
     option.value = index; 
-    // Mostriamo codice, descrizione e prezzo lordo
     option.textContent = `${item.codice} - ${item.descrizione} - €${item.prezzoLordo}`;
     select.appendChild(option);
   });
@@ -131,14 +126,14 @@ function aggiungiArticoloDaListino() {
   if (!select || !select.value) return;
 
   // Rifacciamo lo stesso filtro usato per popolare la select
-  const searchTerm = (document.getElementById("searchListino").value || "").toLowerCase();
+  const searchTerm = document.getElementById("searchListino").value.toLowerCase();
   const filtered = listino.filter(item => {
-    const codice = (item.codice || "").toLowerCase();
-    const desc = (item.descrizione || "").toLowerCase();
+    const codice = item.codice.toLowerCase();
+    const desc = item.descrizione.toLowerCase();
     return codice.includes(searchTerm) || desc.includes(searchTerm);
   });
 
-  // Prendiamo l'elemento selezionato in base all'indice
+  // Prendiamo l'elemento selezionato
   const item = filtered[parseInt(select.value)];
   if (!item) return;
 
@@ -162,7 +157,7 @@ function aggiungiArticoloDaListino() {
 // -----------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
   initCSVImport();
-  // Aggiungi qui altri eventuali event listener all'avvio
+  // Altri event listener possono essere aggiunti qui
 });
 
 // -----------------------------------------------------
@@ -318,7 +313,8 @@ function aggiornaTotaleGenerale() {
 }
 
 function calcolaMarginalita() {
-  const testoTotale = document.getElementById("totaleArticoli")?.textContent || "0";
+  const divTotaleArticoli = document.getElementById("totaleArticoli");
+  const testoTotale = divTotaleArticoli ? divTotaleArticoli.textContent : "0";
   let match = testoTotale.match(/([\d.,]+)/);
   let totaleArticoli = 0;
   if (match) {
@@ -326,7 +322,7 @@ function calcolaMarginalita() {
   }
 
   const margineInput = document.getElementById("margine");
-  const margine = parseFloat(margineInput?.value) || 0;
+  const margine = parseFloat(margineInput ? margineInput.value : 0) || 0;
 
   let nuovoTotale = totaleArticoli;
   if (margine > 0) {
@@ -348,7 +344,8 @@ function calcolaTotaleFinale() {
   let trasportoNum      = parseNumberITA(trasportoVal);
   let installazioneNum  = parseNumberITA(installazioneVal);
 
-  const testoMarginalita = document.getElementById("totaleMarginalita")?.textContent || "0";
+  const divTotaleMarginalita = document.getElementById("totaleMarginalita");
+  const testoMarginalita = divTotaleMarginalita ? divTotaleMarginalita.textContent : "0";
   let match = testoMarginalita.match(/([\d.,]+)/);
   let nuovoTotale = 0;
   if (match) {
@@ -356,7 +353,6 @@ function calcolaTotaleFinale() {
   }
 
   let finale = nuovoTotale + trasportoNum + installazioneNum;
-
   const divTotaleFinale = document.getElementById("totaleFinale");
   if (divTotaleFinale) {
     divTotaleFinale.textContent = `Totale Finale: ${formatNumberITA(finale)}€`;
