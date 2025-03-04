@@ -11,15 +11,14 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Quando il DOM è pronto
 document.addEventListener('DOMContentLoaded', () => {
   // Variabili globali
-  let csvData = [];              // Array dei dati CSV (ogni elemento è una riga come oggetto)
-  let selectedColumns = {};      // Mapping tra campo atteso e colonna CSV selezionata
-  let catalogs = {};             // Oggetto per memorizzare i listini salvati
+  let csvData = [];              // Dati CSV: ogni elemento rappresenta una riga (oggetto)
+  let selectedColumns = {};      // Mappatura tra campi attesi e colonne CSV
+  let catalogs = {};             // Oggetto per i listini salvati
   let currentCatalogName = null; // Nome del listino attualmente caricato
 
-  // Carico eventuali listini salvati in LocalStorage
+  // Carico i listini salvati da LocalStorage
   if (localStorage.getItem('catalogs')) {
     catalogs = JSON.parse(localStorage.getItem('catalogs'));
   }
@@ -38,19 +37,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const productGrossPriceInput = document.getElementById('productGrossPrice');
   const productNetPriceInput = document.getElementById('productNetPrice');
 
-  // 1. Parsing del CSV con PapaParse
+  // 1. Parsing del CSV tramite PapaParse
   csvFileInput.addEventListener('change', (e) => {
-    let files = e.target.files;
+    const files = e.target.files;
     if (files.length === 0) return;
-    // Per semplicità, gestiamo solo il primo file
-    let file = files[0];
+    const file = files[0];
 
     Papa.parse(file, {
-      header: true,         // Considera la prima riga come header
+      header: true,         // La prima riga contiene gli header
       skipEmptyLines: true, // Salta le righe vuote
       complete: function (results) {
-        csvData = results.data; // Array di oggetti (una riga per ogni elemento)
-        // Visualizza l'interfaccia per la selezione delle colonne usando gli header
+        csvData = results.data;
+        // Mostra la sezione per la selezione delle colonne
         displayColumnSelection(Object.keys(results.data[0]));
       },
       error: function (err) {
@@ -59,30 +57,30 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Funzione per mostrare la sezione di selezione delle colonne
+  // Funzione per visualizzare l'interfaccia di selezione delle colonne
   function displayColumnSelection(headers) {
     columnsOptionsDiv.innerHTML = '';
     columnsSelectionSection.style.display = 'block';
-    // Campi attesi dall'app: Codice, Descrizione, Prezzo Lordo, Prezzo Netto
-    let fields = ['Codice', 'Descrizione', 'Prezzo Lordo', 'Prezzo Netto'];
+    // Campi attesi: Codice, Descrizione, Prezzo Lordo, Prezzo Netto
+    const fields = ['Codice', 'Descrizione', 'Prezzo Lordo', 'Prezzo Netto'];
     fields.forEach(field => {
-      let div = document.createElement('div');
-      let label = document.createElement('label');
+      const div = document.createElement('div');
+      const label = document.createElement('label');
       label.textContent = `Seleziona la colonna per ${field}: `;
-      let select = document.createElement('select');
+      const select = document.createElement('select');
       // Opzione di default
-      let defaultOption = document.createElement('option');
+      const defaultOption = document.createElement('option');
       defaultOption.value = '';
       defaultOption.textContent = '-- Seleziona --';
       select.appendChild(defaultOption);
-      // Aggiungo un'opzione per ogni header del CSV
+      // Aggiungo un'opzione per ogni header presente nel CSV
       headers.forEach(header => {
-        let option = document.createElement('option');
+        const option = document.createElement('option');
         option.value = header;
         option.textContent = header;
         select.appendChild(option);
       });
-      // Imposto un ID per recuperare il valore in seguito
+      // Assegno un ID per recuperare il valore in seguito
       select.id = `select-${field.replace(' ', '').toLowerCase()}`;
       div.appendChild(label);
       div.appendChild(select);
@@ -92,12 +90,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 2. Conferma della selezione delle colonne
   confirmColumnsButton.addEventListener('click', () => {
-    let fields = ['Codice', 'Descrizione', 'Prezzo Lordo', 'Prezzo Netto'];
+    const fields = ['Codice', 'Descrizione', 'Prezzo Lordo', 'Prezzo Netto'];
     let mapping = {};
     let valid = true;
     fields.forEach(field => {
-      let select = document.getElementById(`select-${field.replace(' ', '').toLowerCase()}`);
-      let value = select.value;
+      const select = document.getElementById(`select-${field.replace(' ', '').toLowerCase()}`);
+      const value = select.value;
       if (value === '') {
         alert(`Seleziona una colonna per ${field}`);
         valid = false;
@@ -117,15 +115,14 @@ document.addEventListener('DOMContentLoaded', () => {
   function populateProductDropdown() {
     productDropdown.innerHTML = '';
     // Opzione di default
-    let defaultOption = document.createElement('option');
+    const defaultOption = document.createElement('option');
     defaultOption.value = '';
     defaultOption.textContent = '-- Seleziona Prodotto --';
     productDropdown.appendChild(defaultOption);
     // Per ogni riga del CSV, creo un'opzione nel dropdown
     csvData.forEach((row, index) => {
-      let option = document.createElement('option');
-      // Visualizza ad esempio il valore del campo "Codice" e "Descrizione"
-      option.value = index; // uso l'indice per identificare la riga
+      const option = document.createElement('option');
+      option.value = index; // Utilizzo l'indice per identificare la riga
       option.textContent = `${row[selectedColumns['Codice']]} - ${row[selectedColumns['Descrizione']]}`;
       productDropdown.appendChild(option);
     });
@@ -133,16 +130,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 4. Visualizzazione dei dettagli del prodotto selezionato
   productDropdown.addEventListener('change', () => {
-    let index = productDropdown.value;
+    const index = productDropdown.value;
     if (index === '') {
-      // Pulisco i campi se non c'è selezione
+      // Se non è selezionato nessun prodotto, pulisco i campi
       productCodeInput.value = '';
       productDescriptionInput.value = '';
       productGrossPriceInput.value = '';
       productNetPriceInput.value = '';
       return;
     }
-    let row = csvData[index];
+    const row = csvData[index];
     productCodeInput.value = row[selectedColumns['Codice']] || '';
     productDescriptionInput.value = row[selectedColumns['Descrizione']] || '';
     productGrossPriceInput.value = row[selectedColumns['Prezzo Lordo']] || '';
@@ -151,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 5. Salvataggio del listino in LocalStorage
   saveCatalogButton.addEventListener('click', () => {
-    let catalogName = catalogNameInput.value.trim();
+    const catalogName = catalogNameInput.value.trim();
     if (catalogName === '') {
       alert('Inserisci un nome per il listino.');
       return;
@@ -160,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('Nessun dato CSV caricato.');
       return;
     }
-    // Salvo il listino con il mapping delle colonne e i dati CSV
+    // Salvo il listino con i dati CSV e il mapping delle colonne
     catalogs[catalogName] = {
       columns: selectedColumns,
       data: csvData
@@ -172,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 6. Eliminazione di un listino salvato
   deleteCatalogButton.addEventListener('click', () => {
-    let catalogName = catalogNameInput.value.trim();
+    const catalogName = catalogNameInput.value.trim();
     if (catalogName === '') {
       alert('Inserisci il nome del listino da eliminare.');
       return;
@@ -181,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
       delete catalogs[catalogName];
       localStorage.setItem('catalogs', JSON.stringify(catalogs));
       alert(`Listino '${catalogName}' eliminato.`);
-      // Se il listino eliminato era quello caricato, resetto i dati
+      // Se il listino eliminato era quello attivo, resetto i dati
       if (currentCatalogName === catalogName) {
         csvData = [];
         selectedColumns = {};
@@ -192,11 +189,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 7. Caricamento di un listino salvato quando l'utente inserisce il nome
+  // 7. Caricamento di un listino salvato inserendo il nome nel campo
   catalogNameInput.addEventListener('change', () => {
-    let catalogName = catalogNameInput.value.trim();
+    const catalogName = catalogNameInput.value.trim();
     if (catalogs[catalogName]) {
-      let catalog = catalogs[catalogName];
+      const catalog = catalogs[catalogName];
       selectedColumns = catalog.columns;
       csvData = catalog.data;
       populateProductDropdown();
