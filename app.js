@@ -78,7 +78,7 @@ function aggiornaTabellaArticoli() {
   
   articoliAggiunti.forEach((articolo, index) => {
     const totale = articolo.prezzoLordo * (1 - (articolo.sconto || 0) / 100);
-    const granTotale = totale + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0);
+    const granTotale = totale / (1 - (articolo.margine || 0) / 100) + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0);
     
     const row = document.createElement("tr");
     row.innerHTML = `
@@ -97,17 +97,32 @@ function aggiornaTabellaArticoli() {
   });
 }
 
+// ✅ FIX: Adesso il valore si aggiorna senza refresh continuo della tabella
 function aggiornaCampo(event) {
   const input = event.target;
   const index = parseInt(input.getAttribute("data-index"));
   const field = input.getAttribute("data-field");
   const value = input.value;
 
+  // Evita il reset dell'input mentre scrivi
   if (!isNaN(value) && value !== "") {
     articoliAggiunti[index][field] = parseFloat(value);
   }
 
-  aggiornaTabellaArticoli();
+  // Aggiorna il calcolo senza refreshare la tabella
+  aggiornaCalcoli(index);
+}
+
+// Funzione per aggiornare solo il calcolo, senza ridisegnare la tabella
+function aggiornaCalcoli(index) {
+  const articolo = articoliAggiunti[index];
+  const totale = articolo.prezzoLordo * (1 - (articolo.sconto || 0) / 100);
+  const granTotale = totale / (1 - (articolo.margine || 0) / 100) + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0);
+
+  // Aggiorna solo i campi che cambiano
+  const row = document.querySelector(`#articoli-table tbody tr:nth-child(${index + 1})`);
+  row.cells[5].textContent = `${totale.toFixed(2)}€`;
+  row.cells[8].textContent = `${granTotale.toFixed(2)}€`;
 }
 
 function rimuoviArticolo(index) {
