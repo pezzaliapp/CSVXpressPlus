@@ -4,8 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSVXpress</title>
+
+  <!-- Manifest PWA -->
   <link rel="manifest" href="manifest.json">
+
+  <!-- Foglio di stile -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- (Opzionale) Meta tag per il tema PWA -->
+  <meta name="theme-color" content="#ffffff">
 </head>
 <body>
   <header>
@@ -23,7 +30,7 @@
     <section id="columns-selection" style="display:none;">
       <h2>Seleziona le Colonne</h2>
       <div id="columns-options">
-        <!-- Le opzioni verranno inserite dinamicamente -->
+        <!-- Le opzioni verranno inserite dinamicamente da app.js -->
       </div>
       <button id="confirm-columns">Conferma Selezione</button>
     </section>
@@ -40,19 +47,34 @@
     <section id="product-selection">
       <h2>Seleziona Prodotto</h2>
       <select id="productDropdown">
-        <!-- Le opzioni verranno popolate dinamicamente -->
+        <!-- Le opzioni verranno popolate dinamicamente da app.js -->
       </select>
       <div id="productDetails">
-        <label>Codice: <input type="text" id="productCode" readonly></label>
-        <label>Descrizione: <input type="text" id="productDescription" readonly></label>
-        <label>Prezzo Lordo: <input type="text" id="productGrossPrice" readonly></label>
-        <label>Prezzo Netto: <input type="text" id="productNetPrice" readonly></label>
+        <label>Codice:
+          <input type="text" id="productCode" readonly>
+        </label>
+        <label>Descrizione:
+          <input type="text" id="productDescription" readonly>
+        </label>
+        <label>Prezzo Lordo:
+          <input type="text" id="productGrossPrice" readonly>
+        </label>
+        <label>Prezzo Netto:
+          <input type="text" id="productNetPrice" readonly>
+        </label>
       </div>
     </section>
   </main>
   
-  <!-- Inclusione di PapaParse tramite CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js" integrity="sha512-MWsH2ELU/9vJj+YHtzjnicvUhKE+0dKEa+PISU0c1o6FEgDr5Yd/HrRgUJYhlR6O05iTxxdt+cI1tjOWa2M3RQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- Inclusione di PapaParse da CDN -->
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"
+    integrity="sha512-MWsH2ELU/9vJj+YHtzjnicvUhKE+0dKEa+PISU0c1o6FEgDr5Yd/HrRgUJYhlR6O05iTxxdt+cI1tjOWa2M3RQ=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer">
+  </script>
+
+  <!-- Logica dell'applicazione -->
   <script src="app.js"></script>
 </body>
 </html>
