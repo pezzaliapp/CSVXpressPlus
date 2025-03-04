@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSVXpress</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>CSVXpress</h1>
+  </header>
+  
+  <main>
+    <!-- Sezione per il caricamento CSV -->
+    <section id="upload-section">
+      <h2>Carica Listino CSV</h2>
+      <input type="file" id="csvFileInput" accept=".csv" multiple>
+    </section>
+    
+    <!-- Sezione per la selezione delle colonne -->
+    <section id="columns-selection" style="display:none;">
+      <h2>Seleziona le Colonne</h2>
+      <div id="columns-options">
+        <!-- Le checkbox verranno aggiunte dinamicamente -->
+      </div>
+      <button id="confirm-columns">Conferma Selezione</button>
+    </section>
+    
+    <!-- Sezione per salvare/modificare listino -->
+    <section id="save-catalog">
+      <h2>Salva o Gestisci Listino</h2>
+      <input type="text" id="catalogName" placeholder="Nome listino">
+      <button id="saveCatalog">Salva</button>
+      <button id="deleteCatalog">Elimina</button>
+      <!-- eventualmente un pulsante per sostituire -->
+    </section>
+    
+    <!-- Sezione per la ricerca e visualizzazione prodotti -->
+    <section id="product-selection">
+      <h2>Seleziona Prodotto</h2>
+      <select id="productDropdown">
+        <!-- opzioni popolate dinamicamente -->
+      </select>
+      <div id="productDetails">
+        <label>Codice: <input type="text" id="productCode" readonly></label>
+        <label>Descrizione: <input type="text" id="productDescription" readonly></label>
+        <label>Prezzo Lordo: <input type="text" id="productGrossPrice" readonly></label>
+        <label>Prezzo Netto: <input type="text" id="productNetPrice" readonly></label>
+      </div>
+    </section>
+  </main>
+  
+  <script src="app.js"></script>
+</body>
+</html>
