@@ -16,7 +16,7 @@ if ('serviceWorker' in navigator) {
 // =====================================================
 // VARIABILI GLOBALI
 // =====================================================
-let listino = []; // Qui verranno salvati i dati del CSV
+let listino = []; // Qui verranno salvati i dati importati dal CSV
 
 // =====================================================
 // INIZIALIZZAZIONE DELLA PAGINA
@@ -71,11 +71,11 @@ function initCSVImport() {
     if (!file) return;
 
     Papa.parse(file, {
-      // Se il CSV utilizza il punto e virgola, decommenta la riga sottostante:
+      // Se il tuo CSV utilizza il punto e virgola, usa:
       // delimiter: ';',
-      // Se il CSV è separato da tab, decommenta la riga sottostante:
+      // Se il CSV è separato da tab, usa:
       delimiter: "\t",
-      header: true,         // La prima riga è l'intestazione
+      header: true,          // Interpreta la prima riga come intestazione
       skipEmptyLines: true,
       complete: function(results) {
         console.log("Risultati PapaParse:", results.data);
@@ -83,7 +83,7 @@ function initCSVImport() {
           console.error("Nessun dato trovato nel CSV.");
           return;
         }
-        // Poiché usiamo header: true, ogni riga è un oggetto con le proprietà dell'header
+        // Poiché header: true, ogni riga è un oggetto con le chiavi che corrispondono alle intestazioni
         listino = results.data.map(row => ({
           codice: (row["Codice"] || "").trim(),
           descrizione: (row["Descrizione"] || "").trim(),
