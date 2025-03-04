@@ -1,36 +1,40 @@
-// Nome della cache e lista delle risorse da pre-cachare
-const CACHE_NAME = 'csvxpress-cache-v1';
+// Nome della cache (cambia versione quando aggiorni i file)
+const CACHE_NAME = 'csvxpress-v1';
+
+// Elenco dei file da pre-cachare
 const urlsToCache = [
-  '/', // Assicurati che il server risponda correttamente alla root
+  '/',                // Se hai un hosting su GitHub Pages, assicura che '/' punti a index.html
   '/index.html',
   '/style.css',
   '/app.js',
   '/manifest.json',
   '/icon/CSVXpress-192.png',
   '/icon/CSVXpress-512.png',
+  // Libreria PapaParse da CDN (se vuoi che sia disponibile offline)
   'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js'
 ];
 
-// Fase di installazione: apre la cache e pre-carica le risorse elencate
+// Installazione del Service Worker: pre-cachiamo le risorse
 self.addEventListener('install', event => {
   console.log('[ServiceWorker] Installazione');
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('[ServiceWorker] Pre-caching delle risorse');
-        return cache.addAll(urlsToCache);
-      })
+    caches.open(CACHE_NAME).then(cache => {
+      console.log('[ServiceWorker] Pre-caching delle risorse');
+      return cache.addAll(urlsToCache);
+    })
   );
+  // Forza il service worker a diventare attivo subito
   self.skipWaiting();
 });
 
-// Fase di attivazione: pulisce le vecchie cache
+// Attivazione del Service Worker: pulizia vecchie cache
 self.addEventListener('activate', event => {
   console.log('[ServiceWorker] Attivazione');
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
+          // Se la cache non è quella corrente, eliminala
           if (cacheName !== CACHE_NAME) {
             console.log('[ServiceWorker] Rimozione vecchia cache:', cacheName);
             return caches.delete(cacheName);
@@ -39,39 +43,32 @@ self.addEventListener('activate', event => {
       );
     })
   );
+  // Rendi il SW attivo in tutte le pagine subito
   self.clients.claim();
 });
 
-// Gestione delle richieste (fetch)
+// Intercetta le richieste e usa prima la cache, poi la rete
 self.addEventListener('fetch', event => {
   console.log('[ServiceWorker] Fetch:', event.request.url);
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Se la richiesta è presente nella cache, restituiscila
-        if (response) {
-          return response;
+    caches.match(event.request).then(response => {
+      // Se la risorsa è in cache, restituiscila subito
+      if (response) {
+        return response;
+      }
+      // Altrimenti, prova a scaricarla dalla rete
+      return fetch(event.request).then(networkResponse => {
+        // Se la risposta non è valida, restituiscila così com’è
+        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+          return networkResponse;
         }
-        // Altrimenti, esegui la fetch dalla rete e aggiungi il risultato nella cache
-        const fetchRequest = event.request.clone();
-        return fetch(fetchRequest)
-          .then(response => {
-            // Se la risposta non è valida, restituiscila senza cache
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-            return response;
-          });
-      }).catch(() => {
-        // In caso di errore (es. offline), se la richiesta è per una pagina, restituisci index.html come fallback
-        if (event.request.destination === 'document') {
-          return caches.match('/index.html');
-        }
-      })
+        // Altrimenti, mettiamo una copia in cache
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, responseToCache);
+        });
+        return networkResponse;
+      });
+    })
   );
 });
