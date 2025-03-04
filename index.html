@@ -4,14 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSVXpress</title>
-
-  <!-- Manifest PWA -->
   <link rel="manifest" href="manifest.json">
-
-  <!-- Foglio di stile -->
   <link rel="stylesheet" href="style.css">
-
-  <!-- (Opzionale) Meta tag per il tema PWA -->
   <meta name="theme-color" content="#ffffff">
 </head>
 <body>
@@ -23,57 +17,54 @@
     <!-- Sezione per il caricamento del CSV -->
     <section id="upload-section">
       <h2>Carica Listino CSV</h2>
-      <input type="file" id="csvFileInput" accept=".csv" multiple>
+      <input type="file" id="csvFileInput" accept=".csv">
     </section>
-    
-    <!-- Sezione per la selezione delle colonne -->
-    <section id="columns-selection" style="display:none;">
-      <h2>Seleziona le Colonne</h2>
-      <div id="columns-options">
-        <!-- Le opzioni verranno inserite dinamicamente da app.js -->
-      </div>
-      <button id="confirm-columns">Conferma Selezione</button>
-    </section>
-    
-    <!-- Sezione per salvare o gestire il listino -->
-    <section id="save-catalog">
-      <h2>Salva o Gestisci Listino</h2>
-      <input type="text" id="catalogName" placeholder="Nome listino">
-      <button id="saveCatalog">Salva</button>
-      <button id="deleteCatalog">Elimina</button>
-    </section>
-    
-    <!-- Sezione per la selezione e visualizzazione dei prodotti -->
-    <section id="product-selection">
-      <h2>Seleziona Prodotto</h2>
-      <select id="productDropdown">
+
+    <!-- Sezione per il filtraggio e la selezione dal listino CSV -->
+    <section id="listino-section">
+      <h2>Filtra e Seleziona Articolo dal Listino</h2>
+      <label for="searchListino">Cerca: </label>
+      <input type="text" id="searchListino" placeholder="Inserisci codice o descrizione">
+      <select id="listinoSelect">
         <!-- Le opzioni verranno popolate dinamicamente da app.js -->
       </select>
-      <div id="productDetails">
-        <label>Codice:
-          <input type="text" id="productCode" readonly>
-        </label>
-        <label>Descrizione:
-          <input type="text" id="productDescription" readonly>
-        </label>
-        <label>Prezzo Lordo:
-          <input type="text" id="productGrossPrice" readonly>
-        </label>
-        <label>Prezzo Netto:
-          <input type="text" id="productNetPrice" readonly>
-        </label>
+      <button onclick="aggiungiArticoloDaListino()">Aggiungi Articolo Selezionato</button>
+    </section>
+
+    <!-- Sezione per visualizzare e gestire gli articoli aggiunti -->
+    <section id="articoli-section">
+      <h2>Articoli Aggiunti</h2>
+      <div id="articoli-container">
+        <!-- Qui verranno aggiunti gli articoli (righe) -->
       </div>
+      <button onclick="aggiungiArticolo()">Aggiungi Articolo Manuale</button>
+    </section>
+
+    <!-- Sezione per visualizzare i totali -->
+    <section id="totali-section">
+      <h2>Totali</h2>
+      <div id="totaleArticoli">Totale Articoli: 0,00€</div>
+      <div>
+        <label for="margine">Margine (%): </label>
+        <input type="number" id="margine" value="0" step="0.01">
+      </div>
+      <div id="totaleMarginalita">Nuovo Totale Articoli: 0,00€</div>
+      <div>
+        <label for="costoTrasporto">Costo Trasporto (€): </label>
+        <input type="text" id="costoTrasporto" value="0">
+      </div>
+      <div>
+        <label for="costoInstallazione">Costo Installazione (€): </label>
+        <input type="text" id="costoInstallazione" value="0">
+      </div>
+      <div id="totaleFinale">Totale Finale: 0,00€</div>
     </section>
   </main>
   
-  <!-- Inclusione di PapaParse da CDN -->
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"
-    integrity="sha512-MWsH2ELU/9vJj+YHtzjnicvUhKE+0dKEa+PISU0c1o6FEgDr5Yd/HrRgUJYhlR6O05iTxxdt+cI1tjOWa2M3RQ=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer">
-  </script>
-
+  <!-- Inclusione di PapaParse tramite CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js" 
+          integrity="sha512-MWsH2ELU/9vJj+YHtzjnicvUhKE+0dKEa+PISU0c1o6FEgDr5Yd/HrRgUJYhlR6O05iTxxdt+cI1tjOWa2M3RQ=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <!-- Logica dell'applicazione -->
   <script src="app.js"></script>
 </body>
