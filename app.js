@@ -29,6 +29,8 @@ function handleCSVUpload(event) {
         codice: row["Codice"]?.trim() || "",
         descrizione: row["Descrizione"]?.trim() || "",
         prezzoLordo: row["PrezzoLordo"]?.trim() || "0",
+        sconto: "0",
+        margine: "0",
         costoTrasporto: row["CostoTrasporto"]?.trim() || "0",
         costoInstallazione: row["CostoInstallazione"]?.trim() || "0"
       }));
@@ -80,12 +82,20 @@ function aggiornaTabellaArticoli() {
   tableBody.innerHTML = "";
   
   articoliAggiunti.forEach((articolo, index) => {
+    const totale = parseFloat(articolo.prezzoLordo) * (1 - parseFloat(articolo.sconto) / 100);
+    const granTotale = totale + parseFloat(articolo.costoTrasporto) + parseFloat(articolo.costoInstallazione);
+    
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${articolo.codice}</td>
       <td>${articolo.descrizione}</td>
+      <td>${articolo.prezzoLordo}€</td>
+      <td>${articolo.sconto}%</td>
+      <td>${articolo.margine}%</td>
+      <td>${totale.toFixed(2)}€</td>
       <td>${articolo.costoTrasporto}€</td>
       <td>${articolo.costoInstallazione}€</td>
+      <td>${granTotale.toFixed(2)}€</td>
       <td><button onclick="rimuoviArticolo(${index})">Rimuovi</button></td>
     `;
     tableBody.appendChild(row);
