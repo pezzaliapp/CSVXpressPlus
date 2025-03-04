@@ -27,7 +27,9 @@ function handleCSVUpload(event) {
       listino = results.data.map(row => ({
         codice: row["Codice"]?.trim() || "",
         descrizione: row["Descrizione"]?.trim() || "",
-        prezzoLordo: row["PrezzoLordo"]?.trim() || "0"
+        prezzoLordo: row["PrezzoLordo"]?.trim() || "0",
+        costoTrasporto: row["CostoTrasporto"]?.trim() || "0",
+        costoInstallazione: row["CostoInstallazione"]?.trim() || "0"
       }));
       aggiornaListinoSelect();
     },
@@ -56,5 +58,13 @@ function aggiungiArticoloDaListino() {
   const select = document.getElementById("listinoSelect");
   if (!select.value) return;
   const articolo = listino[parseInt(select.value)];
-  console.log("Articolo selezionato:", articolo);
+  const tableBody = document.querySelector("#articoli-table tbody");
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td>${articolo.codice}</td>
+    <td>${articolo.descrizione}</td>
+    <td>${articolo.costoTrasporto}€</td>
+    <td>${articolo.costoInstallazione}€</td>
+  `;
+  tableBody.appendChild(row);
 }
