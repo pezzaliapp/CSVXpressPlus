@@ -29,10 +29,10 @@ function handleCSVUpload(event) {
         codice: row["Codice"]?.trim() || "",
         descrizione: row["Descrizione"]?.trim() || "",
         prezzoLordo: parseFloat(row["PrezzoLordo"]?.trim()) || 0,
-        sconto: 0,
-        margine: 0,
-        costoTrasporto: 0,
-        costoInstallazione: 0
+        sconto: "",
+        margine: "",
+        costoTrasporto: parseFloat(row["CostoTrasporto"]?.trim()) || 0,
+        costoInstallazione: parseFloat(row["CostoInstallazione"]?.trim()) || 0
       }));
       aggiornaListinoSelect();
     },
@@ -58,40 +58,21 @@ function aggiornaListinoSelect() {
   });
 }
 
-function aggiungiArticoloDaListino() {
-  const select = document.getElementById("listinoSelect");
-  if (!select.value) return;
-  const articolo = listino.find(item => item.codice === select.value);
-  
-  if (!articolo) {
-    alert("Errore: articolo non trovato nel listino.");
-    return;
-  }
-  
-  articolo.sconto = 0;
-  articolo.margine = 0;
-  articolo.costoTrasporto = 0;
-  articolo.costoInstallazione = 0;
-  
-  articoliAggiunti.push(articolo);
-  aggiornaTabellaArticoli();
-}
-
 function aggiornaTabellaArticoli() {
   const tableBody = document.querySelector("#articoli-table tbody");
   tableBody.innerHTML = "";
   
   articoliAggiunti.forEach((articolo, index) => {
-    const totale = articolo.prezzoLordo * (1 - articolo.sconto / 100);
-    const granTotale = totale / (1 - articolo.margine / 100) + articolo.costoTrasporto + articolo.costoInstallazione;
+    const totale = articolo.prezzoLordo * (1 - (parseFloat(articolo.sconto) || 0) / 100);
+    const granTotale = totale / (1 - (parseFloat(articolo.margine) || 0) / 100) + parseFloat(articolo.costoTrasporto) + parseFloat(articolo.costoInstallazione);
     
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${articolo.codice}</td>
       <td>${articolo.descrizione}</td>
-      <td><input type="number" value="${articolo.prezzoLordo}" disabled></td>
-      <td><input type="number" value="${articolo.sconto}" oninput="aggiornaCalcoli(${index})"></td>
-      <td><input type="number" value="${articolo.margine}" oninput="aggiornaCalcoli(${index})"></td>
+      <td>${articolo.prezzoLordo}€</td>
+      <td><input type="number" value="${articolo.sconto}" placeholder="%" oninput="aggiornaCalcoli(${index})"></td>
+      <td><input type="number" value="${articolo.margine}" placeholder="%" oninput="aggiornaCalcoli(${index})"></td>
       <td>${totale.toFixed(2)}€</td>
       <td><input type="number" value="${articolo.costoTrasporto}" oninput="aggiornaCalcoli(${index})"></td>
       <td><input type="number" value="${articolo.costoInstallazione}" oninput="aggiornaCalcoli(${index})"></td>
@@ -103,9 +84,10 @@ function aggiornaTabellaArticoli() {
 }
 
 function aggiornaCalcoli(index) {
-  articoliAggiunti[index].sconto = parseFloat(event.target.parentElement.parentElement.children[3].children[0].value) || 0;
-  articoliAggiunti[index].margine = parseFloat(event.target.parentElement.parentElement.children[4].children[0].value) || 0;
-  articoliAggiunti[index].costoTrasporto = parseFloat(event.target.parentElement.parentElement.children[6].children[0].value) || 0;
-  articoliAggiunti[index].costoInstallazione = parseFloat(event.target.parentElement.parentElement.children[7].children[0].value) || 0;
+  const row = document.querySelector(`#articoli-table tbody tr:nth-child(${index + 1})`);
+  articoliAggiunti[index].sconto = row.children[3].children[0].value;
+  articoliAggiunti[index].margine = row.children[4].children[0].value;
+  articoliAggiunti[index].costoTrasporto = row.children[6].children[0].value;
+  articoliAggiunti[index].costoInstallazione = row.children[7].children[0].value;
   aggiornaTabellaArticoli();
 }
