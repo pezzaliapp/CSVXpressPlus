@@ -29,8 +29,8 @@ function handleCSVUpload(event) {
         codice: row["Codice"]?.trim() || "",
         descrizione: row["Descrizione"]?.trim() || "",
         prezzoLordo: parseFloat(row["PrezzoLordo"]?.trim()) || 0,
-        sconto: "",
-        margine: "",
+        sconto: 0,
+        margine: 0,
         costoTrasporto: parseFloat(row["CostoTrasporto"]?.trim()) || 0,
         costoInstallazione: parseFloat(row["CostoInstallazione"]?.trim()) || 0
       }));
@@ -77,19 +77,19 @@ function aggiornaTabellaArticoli() {
   tableBody.innerHTML = "";
   
   articoliAggiunti.forEach((articolo, index) => {
-    const totale = articolo.prezzoLordo * (1 - (parseFloat(articolo.sconto) || 0) / 100);
-    const granTotale = totale / (1 - (parseFloat(articolo.margine) || 0) / 100) + (parseFloat(articolo.costoTrasporto) || 0) + (parseFloat(articolo.costoInstallazione) || 0);
+    const totale = articolo.prezzoLordo * (1 - (articolo.sconto || 0) / 100);
+    const granTotale = totale / (1 - (articolo.margine || 0) / 100) + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0);
     
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${articolo.codice}</td>
       <td>${articolo.descrizione}</td>
       <td>${articolo.prezzoLordo}€</td>
-      <td><input type="number" value="${articolo.sconto}" placeholder="%" oninput="aggiornaCalcoli(${index}, this)"></td>
-      <td><input type="number" value="${articolo.margine}" placeholder="%" oninput="aggiornaCalcoli(${index}, this)"></td>
+      <td><input type="number" value="${articolo.sconto}" placeholder="%" data-index="${index}" data-field="sconto" oninput="aggiornaCampo(event)"></td>
+      <td><input type="number" value="${articolo.margine}" placeholder="%" data-index="${index}" data-field="margine" oninput="aggiornaCampo(event)"></td>
       <td>${totale.toFixed(2)}€</td>
-      <td><input type="number" value="${articolo.costoTrasporto}" placeholder="€" oninput="aggiornaCalcoli(${index}, this)"></td>
-      <td><input type="number" value="${articolo.costoInstallazione}" placeholder="€" oninput="aggiornaCalcoli(${index}, this)"></td>
+      <td><input type="number" value="${articolo.costoTrasporto}" placeholder="€" data-index="${index}" data-field="costoTrasporto" oninput="aggiornaCampo(event)"></td>
+      <td><input type="number" value="${articolo.costoInstallazione}" placeholder="€" data-index="${index}" data-field="costoInstallazione" oninput="aggiornaCampo(event)"></td>
       <td>${granTotale.toFixed(2)}€</td>
       <td><button onclick="rimuoviArticolo(${index})">Rimuovi</button></td>
     `;
@@ -97,26 +97,18 @@ function aggiornaTabellaArticoli() {
   });
 }
 
-function aggiornaCalcoli(index, input) {
-  const value = input.value;
-  if (value === "") return;
-  const numericValue = parseFloat(value);
-  if (isNaN(numericValue)) return;
-  
-  if (input.placeholder === "%") {
-    if (input.parentElement.previousElementSibling.previousElementSibling.textContent.includes("€")) {
-      articoliAggiunti[index].sconto = numericValue;
-    } else {
-      articoliAggiunti[index].margine = numericValue;
-    }
-  } else {
-    if (input.placeholder.includes("€")) {
-      if (input.parentElement.previousElementSibling.textContent.includes("€")) {
-        articoliAggiunti[index].costoTrasporto = numericValue;
-      } else {
-        articoliAggiunti[index].costoInstallazione = numericValue;
-      }
-    }
-  }
+// Funzione per aggiornare solo il campo corretto
+function aggiornaCampo(event) {
+  const input = event.target;
+  const index = parseInt(input.getAttribute("data-index"));
+  const field = input.getAttribute("data-field");
+  const value = parseFloat(input.value) || 0;
+
+  articoliAggiunti[index][field] = value;
+  aggiornaTabellaArticoli();
+}
+
+function rimuoviArticolo(index) {
+  articoliAggiunti.splice(index, 1);
   aggiornaTabellaArticoli();
 }
