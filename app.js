@@ -1,5 +1,3 @@
-App.js funzionante corretta 18:30
-
 // app.js
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js')
