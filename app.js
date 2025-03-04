@@ -85,11 +85,11 @@ function aggiornaTabellaArticoli() {
       <td>${articolo.codice}</td>
       <td>${articolo.descrizione}</td>
       <td>${articolo.prezzoLordo}€</td>
-      <td><input type="text" value="${articolo.sconto}" placeholder="%" oninput="aggiornaCalcoli(${index})"></td>
-      <td><input type="text" value="${articolo.margine}" placeholder="%" oninput="aggiornaCalcoli(${index})"></td>
+      <td><input type="number" value="${articolo.sconto}" placeholder="%" onfocus="this.select()" oninput="aggiornaCalcoli(${index})"></td>
+      <td><input type="number" value="${articolo.margine}" placeholder="%" onfocus="this.select()" oninput="aggiornaCalcoli(${index})"></td>
       <td>${totale.toFixed(2)}€</td>
-      <td><input type="text" value="${articolo.costoTrasporto}" placeholder="€" oninput="aggiornaCalcoli(${index})"></td>
-      <td><input type="text" value="${articolo.costoInstallazione}" placeholder="€" oninput="aggiornaCalcoli(${index})"></td>
+      <td><input type="number" value="${articolo.costoTrasporto}" placeholder="€" onfocus="this.select()" oninput="aggiornaCalcoli(${index})"></td>
+      <td><input type="number" value="${articolo.costoInstallazione}" placeholder="€" onfocus="this.select()" oninput="aggiornaCalcoli(${index})"></td>
       <td>${granTotale.toFixed(2)}€</td>
       <td><button onclick="rimuoviArticolo(${index})">Rimuovi</button></td>
     `;
@@ -103,10 +103,5 @@ function aggiornaCalcoli(index) {
   articoliAggiunti[index].margine = row.children[4].children[0].value;
   articoliAggiunti[index].costoTrasporto = row.children[6].children[0].value;
   articoliAggiunti[index].costoInstallazione = row.children[7].children[0].value;
-  aggiornaTabellaArticoli();
-}
-
-function rimuoviArticolo(index) {
-  articoliAggiunti.splice(index, 1);
   aggiornaTabellaArticoli();
 }
