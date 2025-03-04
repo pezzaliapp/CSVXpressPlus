@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -14,58 +15,28 @@
   </header>
   
   <main>
-    <!-- Sezione per il caricamento del CSV -->
     <section id="upload-section">
       <h2>Carica Listino CSV</h2>
       <input type="file" id="csvFileInput" accept=".csv">
+      <p id="csvError" style="color: red; display: none;">Errore nel caricamento del file CSV.</p>
     </section>
 
-    <!-- Sezione per filtrare e selezionare un articolo dal CSV importato -->
     <section id="listino-section">
       <h2>Filtra e Seleziona Articolo dal Listino</h2>
       <label for="searchListino">Cerca: </label>
       <input type="text" id="searchListino" placeholder="Inserisci codice o descrizione">
-      <select id="listinoSelect">
-        <!-- Le opzioni verranno popolate dinamicamente da app.js -->
-      </select>
+      <select id="listinoSelect"></select>
       <button onclick="aggiungiArticoloDaListino()">Aggiungi Articolo Selezionato</button>
     </section>
 
-    <!-- Sezione per gestire gli articoli aggiunti -->
     <section id="articoli-section">
       <h2>Articoli Aggiunti</h2>
-      <div id="articoli-container">
-        <!-- Qui verranno inseriti gli articoli -->
-      </div>
+      <div id="articoli-container"></div>
       <button onclick="aggiungiArticolo()">Aggiungi Articolo Manuale</button>
-    </section>
-
-    <!-- Sezione per il riepilogo e il calcolo dei totali -->
-    <section id="totali-section">
-      <h2>Totali</h2>
-      <div id="totaleArticoli">Totale Articoli: 0,00€</div>
-      <div>
-        <label for="margine">Margine (%): </label>
-        <input type="number" id="margine" value="0" step="0.01">
-      </div>
-      <div id="totaleMarginalita">Nuovo Totale Articoli: 0,00€</div>
-      <div>
-        <label for="costoTrasporto">Costo Trasporto (€): </label>
-        <input type="text" id="costoTrasporto" value="0">
-      </div>
-      <div>
-        <label for="costoInstallazione">Costo Installazione (€): </label>
-        <input type="text" id="costoInstallazione" value="0">
-      </div>
-      <div id="totaleFinale">Totale Finale: 0,00€</div>
     </section>
   </main>
   
-  <!-- Includi PapaParse tramite CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"
-          integrity="sha512-MWsH2ELU/9vJj+YHtzjnicvUhKE+0dKEa+PISU0c1o6FEgDr5Yd/HrRgUJYhlR6O05iTxxdt+cI1tjOWa2M3RQ=="
-          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <!-- Includi il file app.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
