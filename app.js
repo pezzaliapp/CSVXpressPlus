@@ -98,10 +98,6 @@ function aggiornaTabellaArticoli() {
 }
 
 function aggiornaCalcoli(index) {
-  const row = document.querySelector(`#articoli-table tbody tr:nth-child(${index + 1})`);
-  articoliAggiunti[index].sconto = row.children[3].children[0].value;
-  articoliAggiunti[index].margine = row.children[4].children[0].value;
-  articoliAggiunti[index].costoTrasporto = row.children[6].children[0].value;
-  articoliAggiunti[index].costoInstallazione = row.children[7].children[0].value;
+  articoliAggiunti[index].sconto = document.querySelector(`#articoli-table tbody tr:nth-child(${index + 1}) td:nth-child(4) input`).value;
   aggiornaTabellaArticoli();
 }
