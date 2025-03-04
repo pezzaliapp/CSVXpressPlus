@@ -1,3 +1,5 @@
+App.js funzionante corretta 18:30
+
 // app.js
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js')
@@ -87,9 +89,9 @@ function aggiornaTabellaArticoli() {
       <td>${articolo.prezzoLordo}€</td>
       <td><input type="number" value="${articolo.sconto}" placeholder="%" data-index="${index}" data-field="sconto" oninput="aggiornaCampo(event)"></td>
       <td><input type="number" value="${articolo.margine}" placeholder="%" data-index="${index}" data-field="margine" oninput="aggiornaCampo(event)"></td>
+      <td>${totale.toFixed(2)}€</td>
       <td><input type="number" value="${articolo.costoTrasporto}" placeholder="€" data-index="${index}" data-field="costoTrasporto" oninput="aggiornaCampo(event)"></td>
       <td><input type="number" value="${articolo.costoInstallazione}" placeholder="€" data-index="${index}" data-field="costoInstallazione" oninput="aggiornaCampo(event)"></td>
-      <td>${totale.toFixed(2)}€</td>
       <td>${granTotale.toFixed(2)}€</td>
       <td><button onclick="rimuoviArticolo(${index})">Rimuovi</button></td>
     `;
@@ -97,7 +99,7 @@ function aggiornaTabellaArticoli() {
   });
 }
 
-// ✅ FIX: Ora il valore si aggiorna senza refresh continuo della tabella
+// ✅ FIX: Adesso il valore si aggiorna senza refresh continuo della tabella
 function aggiornaCampo(event) {
   const input = event.target;
   const index = parseInt(input.getAttribute("data-index"));
@@ -109,7 +111,7 @@ function aggiornaCampo(event) {
     articoliAggiunti[index][field] = parseFloat(value);
   }
 
-  // Aggiorna solo il calcolo senza ridisegnare tutta la tabella
+  // Aggiorna il calcolo senza refreshare la tabella
   aggiornaCalcoli(index);
 }
 
@@ -121,7 +123,7 @@ function aggiornaCalcoli(index) {
 
   // Aggiorna solo i campi che cambiano
   const row = document.querySelector(`#articoli-table tbody tr:nth-child(${index + 1})`);
-  row.cells[7].textContent = `${totale.toFixed(2)}€`; // Spostato dopo Installazione
+  row.cells[5].textContent = `${totale.toFixed(2)}€`;
   row.cells[8].textContent = `${granTotale.toFixed(2)}€`;
 }
 
