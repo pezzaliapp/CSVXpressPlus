@@ -1,5 +1,3 @@
-// app.js
-
 // Registra il Service Worker (PWA)
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js')
@@ -62,7 +60,7 @@ function aggiornaListinoSelect() {
   select.innerHTML = "";
 
   listino.forEach((item) => {
-    // Controllo se nel codice o descrizione c'è il testo cercato
+    // Controlla se il codice o la descrizione contengono il testo cercato
     if (item.codice.toLowerCase().includes(searchTerm) ||
         item.descrizione.toLowerCase().includes(searchTerm)) {
       const option = document.createElement("option");
@@ -84,7 +82,7 @@ function aggiungiArticoloDaListino() {
     return;
   }
 
-  // Copiamo l'articolo in articoliAggiunti
+  // Copia l'articolo in articoliAggiunti
   articoliAggiunti.push({ ...articolo });
   aggiornaTabellaArticoli();
 }
@@ -100,15 +98,14 @@ function aggiornaTabellaArticoli() {
     const prezzoScontato = articolo.prezzoLordo * (1 - sconto / 100);
     const totale = roundTwo(prezzoScontato);
 
-    // Calcolo Gran Totale (con margine, trasporto, installazione)
+    // Calcolo del Gran Totale (con margine, trasporto, installazione)
     const margine = articolo.margine || 0;
-    // Usando il totale scontato come base per il margine
     const conMargine = totale / (1 - margine / 100);
     const conMargineRounded = roundTwo(conMargine);
     const granTotale = conMargineRounded + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0);
     const granTotaleFinal = roundTwo(granTotale);
 
-    // Creazione riga
+    // Creazione della riga della tabella
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${articolo.codice}</td>
@@ -168,19 +165,16 @@ function aggiornaCampo(event) {
   const index = parseInt(input.getAttribute("data-index"));
   const field = input.getAttribute("data-field");
 
-  // Sostituisci eventuale virgola con il punto, poi fai parseFloat
+  // Sostituisce eventuale virgola con il punto, poi fa parseFloat
   let val = parseFloat(input.value.replace(",", ".")) || 0;
-  // Nel caso di sconto e margine, non permetti valori negativi
   if ((field === "sconto" || field === "margine") && val < 0) val = 0;
 
-  // Aggiorna in memoria l'articolo
+  // Aggiorna il valore nel singolo articolo
   articoliAggiunti[index][field] = val;
-
-  // Aggiorna i calcoli sulle celle della stessa riga
   aggiornaCalcoli(index);
 }
 
-// Aggiorna solo i calcoli di una riga, senza ridisegnare tutta la tabella
+// Aggiorna i calcoli di una riga senza ridisegnare l'intera tabella
 function aggiornaCalcoli(index) {
   const articolo = articoliAggiunti[index];
 
@@ -195,16 +189,57 @@ function aggiornaCalcoli(index) {
   const granTotale = conMargineRounded + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0);
   const granTotaleFinal = roundTwo(granTotale);
 
-  // Seleziona la riga corrispondente nella tabella
   const row = document.querySelector(`#articoli-table tbody tr:nth-child(${index + 1})`);
-  // cella[5] = Totale
   row.cells[5].textContent = totale.toFixed(2) + "€";
-  // cella[8] = Gran Totale
   row.cells[8].textContent = granTotaleFinal.toFixed(2) + "€";
 }
 
-// Rimuovi un articolo dalla lista
+// Rimuove un articolo dalla lista
 function rimuoviArticolo(index) {
   articoliAggiunti.splice(index, 1);
   aggiornaTabellaArticoli();
+}
+
+// --- Funzioni per il Report ---
+
+// Genera il report in formato testo
+function generaReportTesto() {
+  let report = "Report Articoli:\n\n";
+  let totaleGenerale = 0;
+  
+  articoliAggiunti.forEach((articolo, index) => {
+    const sconto = articolo.sconto || 0;
+    const prezzoScontato = articolo.prezzoLordo * (1 - sconto / 100);
+    const totale = roundTwo(prezzoScontato);
+    
+    const margine = articolo.margine || 0;
+    const conMargine = totale / (1 - margine / 100);
+    const conMargineRounded = roundTwo(conMargine);
+    
+    const granTotale = conMargineRounded + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0);
+    const granTotaleFinal = roundTwo(granTotale);
+    
+    totaleGenerale += granTotaleFinal;
+    report += `${index + 1}. Codice: ${articolo.codice} - Descrizione: ${articolo.descrizione} - Totale: ${granTotaleFinal.toFixed(2)}€\n`;
+  });
+  report += `\nTotale Generale: ${totaleGenerale.toFixed(2)}€`;
+  return report;
+}
+
+// Invia il report tramite WhatsApp
+function inviaReportWhatsApp() {
+  const report = generaReportTesto();
+  const whatsappUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(report);
+  window.open(whatsappUrl, '_blank');
+}
+
+// Genera un PDF del report utilizzando jsPDF
+function generaPDFReport() {
+  const report = generaReportTesto();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  const lines = doc.splitTextToSize(report, 180);
+  doc.text(lines, 10, 10);
+  doc.save("report.pdf");
 }
