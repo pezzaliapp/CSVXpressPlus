@@ -158,7 +158,6 @@ function aggiornaCalcoli(index) {
   const granTotaleFinal = roundTwo(granTotale);
 
   const row = document.querySelector(`#articoli-table tbody tr:nth-child(${index + 1})`);
-  row.cells[5].textContent = totale.toFixed(2) + "€";
   row.cells[9].textContent = granTotaleFinal.toFixed(2) + "€";
 }
 
@@ -199,7 +198,8 @@ function aggiornaTotaliGenerali() {
 
 function generaReportTesto() {
   let report = "Report Articoli:\n\n";
-  let totaleGenerale = 0;
+  let totaleSenzaServizi = 0;
+  let totaleConServizi = 0;
 
   articoliAggiunti.forEach((articolo, index) => {
     const sconto = articolo.sconto || 0;
@@ -210,13 +210,22 @@ function generaReportTesto() {
     const conMargine = totale / (1 - margine / 100);
     const conMargineRounded = roundTwo(conMargine);
 
-    const granTotale = (conMargineRounded + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0)) * (articolo.quantita || 1);
+    const quantita = articolo.quantita || 1;
+    const granTotale = (conMargineRounded + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0)) * quantita;
     const granTotaleFinal = roundTwo(granTotale);
 
-    totaleGenerale += granTotaleFinal;
-    report += `${index + 1}. Codice: ${articolo.codice} - ${articolo.descrizione} - Quantità: ${articolo.quantita} - Totale: ${granTotaleFinal.toFixed(2)}€\n`;
+    totaleSenzaServizi += conMargineRounded * quantita;
+    totaleConServizi += granTotaleFinal;
+
+    report += `${index + 1}. Codice: ${articolo.codice}\n`;
+    report += `Descrizione: ${articolo.descrizione}\n`;
+    report += `Quantità: ${quantita}\n`;
+    report += `Totale: ${granTotaleFinal.toFixed(2)}€\n\n`;
   });
-  report += `\nTotale Generale: ${totaleGenerale.toFixed(2)}€`;
+
+  report += `Totale Netto (senza Trasporto/Installazione): ${totaleSenzaServizi.toFixed(2)}€\n`;
+  report += `Totale Complessivo (inclusi Trasporto/Installazione): ${totaleConServizi.toFixed(2)}€`;
+
   return report;
 }
 
@@ -228,9 +237,11 @@ function inviaReportWhatsApp() {
 
 function generaPDFReport() {
   const report = generaReportTesto();
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  const lines = doc.splitTextToSize(report, 180);
-  doc.text(lines, 10, 10);
-  doc.save("report.pdf");
+  const blob = new Blob([report], { type: "text/plain" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "report.txt";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
