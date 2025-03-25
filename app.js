@@ -27,6 +27,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function togglePopolaCosti() {
   autoPopolaCosti = document.getElementById("toggleCosti").checked;
+
+  articoliAggiunti = articoliAggiunti.map(articolo => {
+    if (autoPopolaCosti) {
+      const listinoOriginale = listino.find(item => item.codice === articolo.codice);
+      return {
+        ...articolo,
+        costoTrasporto: listinoOriginale ? listinoOriginale.costoTrasporto : 0,
+        costoInstallazione: listinoOriginale ? listinoOriginale.costoInstallazione : 0
+      };
+    } else {
+      return {
+        ...articolo,
+        costoTrasporto: 0,
+        costoInstallazione: 0
+      };
+    }
+  });
+
+  aggiornaTabellaArticoli();
   aggiornaTotaliGenerali();
 }
 
