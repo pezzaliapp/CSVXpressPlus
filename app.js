@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function togglePopolaCosti() {
   autoPopolaCosti = document.getElementById("toggleCosti").checked;
+  aggiornaTotaliGenerali();
 }
 
 function handleCSVUpload(event) {
@@ -193,7 +194,11 @@ function aggiornaTotaliGenerali() {
     document.getElementById("report-section").insertAdjacentElement("beforebegin", totaleDiv);
   }
 
-  totaleDiv.innerHTML = `<strong>Totale Netto (senza Trasporto/Installazione):</strong> ${totaleSenzaServizi.toFixed(2)}€<br><strong>Totale Complessivo (inclusi Trasporto/Installazione):</strong> ${totaleConServizi.toFixed(2)}€`;
+  if (!autoPopolaCosti) {
+    totaleDiv.innerHTML = `<strong>Totale Netto (senza Trasporto/Installazione):</strong> ${totaleSenzaServizi.toFixed(2)}€`;
+  } else {
+    totaleDiv.innerHTML = `<strong>Totale Netto (senza Trasporto/Installazione):</strong> ${totaleSenzaServizi.toFixed(2)}€<br><strong>Totale Complessivo (inclusi Trasporto/Installazione):</strong> ${totaleConServizi.toFixed(2)}€`;
+  }
 }
 
 function generaReportTesto() {
@@ -224,7 +229,9 @@ function generaReportTesto() {
   });
 
   report += `Totale Netto (senza Trasporto/Installazione): ${totaleSenzaServizi.toFixed(2)}€\n`;
-  report += `Totale Complessivo (inclusi Trasporto/Installazione): ${totaleConServizi.toFixed(2)}€`;
+  if (autoPopolaCosti) {
+    report += `Totale Complessivo (inclusi Trasporto/Installazione): ${totaleConServizi.toFixed(2)}€`;
+  }
 
   return report;
 }
