@@ -9,6 +9,7 @@ if ('serviceWorker' in navigator) {
 let listino = [];
 let articoliAggiunti = [];
 let autoPopolaCosti = true;
+let mostraDettagliServizi = true;
 
 function roundTwo(num) {
   return Math.round(num * 100) / 100;
@@ -18,15 +19,24 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("csvFileInput").addEventListener("change", handleCSVUpload);
   document.getElementById("searchListino").addEventListener("input", aggiornaListinoSelect);
 
-  const checkbox = document.createElement("label");
-  checkbox.innerHTML = `
+  const checkbox1 = document.createElement("label");
+  checkbox1.innerHTML = `
     <input type="checkbox" id="toggleCosti" checked onchange="togglePopolaCosti()"> Popola automaticamente Trasporto e Installazione
   `;
-  document.getElementById("upload-section").appendChild(checkbox);
+  document.getElementById("upload-section").appendChild(checkbox1);
+
+  const checkbox2 = document.createElement("label");
+  checkbox2.innerHTML = `
+    <br><input type="checkbox" id="toggleMostraServizi" checked> Mostra dettagli Trasporto/Installazione nel report
+  `;
+  document.getElementById("upload-section").appendChild(checkbox2);
 });
 
 function togglePopolaCosti() {
   autoPopolaCosti = document.getElementById("toggleCosti").checked;
+  const secondCheckbox = document.getElementById("toggleMostraServizi");
+  secondCheckbox.disabled = !autoPopolaCosti;
+  mostraDettagliServizi = secondCheckbox.checked;
 
   articoliAggiunti = articoliAggiunti.map(articolo => {
     if (autoPopolaCosti) {
@@ -168,8 +178,6 @@ function aggiornaCalcoli(index) {
 
   const sconto = articolo.sconto || 0;
   const prezzoLordo = articolo.prezzoLordo || 0;
-
-  // Totale = Prezzo Lordo - Sconto %
   const totale = roundTwo(prezzoLordo * (1 - sconto / 100));
 
   const margine = articolo.margine || 0;
@@ -227,6 +235,9 @@ function generaReportTesto() {
   let totaleSenzaServizi = 0;
   let totaleConServizi = 0;
 
+  const checkboxServizi = document.getElementById("toggleMostraServizi");
+  mostraDettagliServizi = checkboxServizi && checkboxServizi.checked;
+
   articoliAggiunti.forEach((articolo, index) => {
     const sconto = articolo.sconto || 0;
     const prezzoScontato = articolo.prezzoLordo * (1 - sconto / 100);
@@ -246,6 +257,10 @@ function generaReportTesto() {
     report += `${index + 1}. Codice: ${articolo.codice}\n`;
     report += `Descrizione: ${articolo.descrizione}\n`;
     report += `Quantità: ${quantita}\n`;
+    if (mostraDettagliServizi && autoPopolaCosti) {
+      report += `Trasporto: ${articolo.costoTrasporto}€\n`;
+      report += `Installazione: ${articolo.costoInstallazione}€\n`;
+    }
     report += `Totale: ${granTotaleFinal.toFixed(2)}€\n\n`;
   });
 
