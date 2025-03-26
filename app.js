@@ -167,17 +167,19 @@ function aggiornaCalcoli(index) {
   const articolo = articoliAggiunti[index];
 
   const sconto = articolo.sconto || 0;
-  const prezzoScontato = articolo.prezzoLordo * (1 - sconto / 100);
-  const totale = roundTwo(prezzoScontato);
+  const prezzoLordo = articolo.prezzoLordo || 0;
+
+  // Totale = Prezzo Lordo - Sconto %
+  const totale = roundTwo(prezzoLordo * (1 - sconto / 100));
 
   const margine = articolo.margine || 0;
-  const conMargine = totale / (1 - margine / 100);
-  const conMargineRounded = roundTwo(conMargine);
+  const conMargine = roundTwo(totale / (1 - margine / 100));
 
-  const granTotale = (conMargineRounded + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0)) * (articolo.quantita || 1);
+  const granTotale = (conMargine + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0)) * (articolo.quantita || 1);
   const granTotaleFinal = roundTwo(granTotale);
 
   const row = document.querySelector(`#articoli-table tbody tr:nth-child(${index + 1})`);
+  row.cells[5].textContent = totale.toFixed(2) + "€";
   row.cells[9].textContent = granTotaleFinal.toFixed(2) + "€";
 }
 
