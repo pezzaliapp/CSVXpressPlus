@@ -288,3 +288,57 @@ function generaPDFReport() {
   link.click();
   document.body.removeChild(link);
 }
+function generaReportTestoSenzaMargine() {
+  let report = "Report Articoli (senza Margine):\n\n";
+  let totaleSenzaServizi = 0;
+  let totaleConServizi = 0;
+
+  const checkboxServizi = document.getElementById("toggleMostraServizi");
+  const mostraServizi = checkboxServizi && checkboxServizi.checked;
+
+  articoliAggiunti.forEach((articolo, index) => {
+    const sconto = articolo.sconto || 0;
+    const prezzoLordo = articolo.prezzoLordo || 0;
+    const prezzoScontato = roundTwo(prezzoLordo * (1 - sconto / 100));
+    const quantita = articolo.quantita || 1;
+
+    const granTotale = (prezzoScontato + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0)) * quantita;
+    const granTotaleFinal = roundTwo(granTotale);
+
+    totaleSenzaServizi += prezzoScontato * quantita;
+    totaleConServizi += granTotaleFinal;
+
+    report += `${index + 1}. Codice: ${articolo.codice}\n`;
+    report += `Descrizione: ${articolo.descrizione}\n`;
+    report += `Quantità: ${quantita}\n`;
+    if (mostraServizi && autoPopolaCosti) {
+      report += `Trasporto: ${articolo.costoTrasporto}€\n`;
+      report += `Installazione: ${articolo.costoInstallazione}€\n`;
+    }
+    report += `Totale: ${granTotaleFinal.toFixed(2)}€\n\n`;
+  });
+
+  report += `Totale Netto (senza Trasporto/Installazione): ${totaleSenzaServizi.toFixed(2)}€\n`;
+  if (autoPopolaCosti) {
+    report += `Totale Complessivo (inclusi Trasporto/Installazione): ${totaleConServizi.toFixed(2)}€`;
+  }
+
+  return report;
+}
+
+function inviaReportWhatsAppSenzaMargine() {
+  const report = generaReportTestoSenzaMargine();
+  const whatsappUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(report);
+  window.open(whatsappUrl, '_blank');
+}
+
+function generaTXTReportSenzaMargine() {
+  const report = generaReportTestoSenzaMargine();
+  const blob = new Blob([report], { type: "text/plain" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "report_senza_margine.txt";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
