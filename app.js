@@ -256,6 +256,7 @@ function generaReportTesto() {
 
     report += `${index + 1}. Codice: ${articolo.codice}\n`;
     report += `Descrizione: ${articolo.descrizione}\n`;
+    report += `Prezzo netto (dopo sconto): ${totale.toFixed(2)}€\n`;
     report += `Quantità: ${quantita}\n`;
     if (mostraDettagliServizi && autoPopolaCosti) {
       report += `Trasporto: ${articolo.costoTrasporto}€\n`;
@@ -310,6 +311,7 @@ function generaReportTestoSenzaMargine() {
 
     report += `${index + 1}. Codice: ${articolo.codice}\n`;
     report += `Descrizione: ${articolo.descrizione}\n`;
+    report += `Prezzo netto (dopo sconto): ${prezzoScontato.toFixed(2)}€\n`;
     report += `Quantità: ${quantita}\n`;
     if (mostraServizi && autoPopolaCosti) {
       report += `Trasporto: ${articolo.costoTrasporto}€\n`;
