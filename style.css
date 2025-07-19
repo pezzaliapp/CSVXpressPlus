@@ -91,3 +91,31 @@ button:hover {
   font-size: 1.1em;
   line-height: 1.6;
 }
+/* Evidenzia le righe alternate (prima + seconda insieme) */
+#articoli-table tr:nth-child(4n-3),
+#articoli-table tr:nth-child(4n-2) {
+  background-color: #fafafa;
+}
+
+/* Bordi più chiari e righe più distanziate */
+#articoli-table tr:nth-child(odd) td {
+  border-bottom: 1px solid #ddd;
+}
+
+/* Separa visivamente la seconda riga */
+#articoli-table tr:nth-child(even) td {
+  background-color: #fefefe;
+  border-top: none;
+}
+
+/* Migliora leggibilità intestazioni */
+#articoli-table thead tr th {
+  background-color: #e3f2fd;
+  border-bottom: 2px solid #2196f3;
+}
+
+/* Allinea meglio contenuti e pulsanti */
+#articoli-table td input[type="number"] {
+  text-align: right;
+  padding: 0.25em;
+}
