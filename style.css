@@ -1,50 +1,33 @@
 
 body {
-  font-family: monospace;
-  background-color: #111;
-  color: #00FF00;
+  background-color: black;
+  color: #00ff00;
+  font-family: "Courier New", monospace;
   margin: 0;
   padding: 0;
 }
-.c64-wrapper {
-  background-color: #0000AA;
-  color: #00FF00;
-  padding: 1em;
-  max-width: 1000px;
-  margin: auto;
+h1 {
+  text-align: center;
+  margin: 1em;
+  color: #00ff00;
 }
-h1, h2 {
-  color: #00FF00;
+main {
+  background-color: #000088;
+  padding: 1em;
+  margin: 1em;
+  overflow-x: auto;
 }
 input, select, button {
-  display: block;
-  margin: 0.5em 0;
-  width: 100%;
-  max-width: 500px;
-  font-family: monospace;
-}
-button {
-  background-color: #000;
-  color: #0F0;
-  border: 1px solid #0F0;
-  padding: 0.5em;
-}
-.table-container {
-  overflow-x: auto;
+  margin: 0.3em 0;
+  font-family: "Courier New", monospace;
 }
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 1em;
+  color: #00ff00;
 }
 th, td {
-  border: 1px solid #00FF00;
-  padding: 0.5em;
+  border: 1px solid #00ff00;
+  padding: 0.3em;
   font-size: 0.9em;
-}
-@media screen and (max-width: 768px) {
-  th, td {
-    font-size: 0.8em;
-    padding: 0.3em;
-  }
 }
