@@ -141,21 +141,31 @@ function aggiornaTabellaArticoli() {
     const granTotale = (conMargineRounded + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0)) * (articolo.quantita || 1);
     const granTotaleFinal = roundTwo(granTotale);
 
-    const row = document.createElement("tr");
-    row.innerHTML = `
+    // Prima riga
+    const row1 = document.createElement("tr");
+    row1.innerHTML = `
       <td>${articolo.codice}</td>
       <td>${articolo.descrizione}</td>
       <td>${articolo.prezzoLordo}€</td>
       <td><input type="number" value="${articolo.sconto}" placeholder="%" data-index="${index}" data-field="sconto" oninput="aggiornaCampo(event)" /></td>
       <td><input type="number" value="${articolo.margine}" placeholder="%" data-index="${index}" data-field="margine" oninput="aggiornaCampo(event)" /></td>
       <td>${totale.toFixed(2)}€</td>
+      <td colspan="5"></td>
+    `;
+
+    // Seconda riga
+    const row2 = document.createElement("tr");
+    row2.innerHTML = `
+      <td colspan="6"></td>
       <td><input type="number" value="${articolo.costoTrasporto}" placeholder="€" data-index="${index}" data-field="costoTrasporto" oninput="aggiornaCampo(event)" /></td>
       <td><input type="number" value="${articolo.costoInstallazione}" placeholder="€" data-index="${index}" data-field="costoInstallazione" oninput="aggiornaCampo(event)" /></td>
       <td><input type="number" value="${articolo.quantita}" min="1" data-index="${index}" data-field="quantita" oninput="aggiornaCampo(event)" /></td>
       <td>${granTotaleFinal.toFixed(2)}€</td>
       <td><button onclick="rimuoviArticolo(${index})">Rimuovi</button></td>
     `;
-    tableBody.appendChild(row);
+
+    tableBody.appendChild(row1);
+    tableBody.appendChild(row2);
   });
 }
 
