@@ -3,51 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CSVXpressPlus</title>
-  <link rel="manifest" href="manifest.json">
+  <title>o64 - Scheda Ordine</title>
   <link rel="stylesheet" href="style.css">
-  <meta name="theme-color" content="#000000">
+  <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <header>
-    <div class="logo-container">
-      <h1>█ CSVXpressPlus █</h1>
+  <div class="c64-wrapper">
+    <h1>Scheda Ordine</h1>
+    <div id="upload-section">
+      <label for="csvFileInput">📁 Carica Listino CSV:</label>
+      <input type="file" id="csvFileInput" accept=".csv"><br>
+      <label for="searchListino">🔎 Cerca Articolo:</label>
+      <input type="text" id="searchListino" placeholder="Cerca nel listino..."><br>
+      <select id="listinoSelect">
+        <option value="">— Seleziona dal listino —</option>
+      </select>
+      <button onclick="aggiungiArticoloDaListino()">Aggiungi</button>
     </div>
-  </header>
 
-  <main>
-    <section id="upload-section">
-      <h2>▌Carica Listino CSV</h2>
-      <input type="file" id="csvFileInput" accept=".csv">
-    </section>
+    <table id="articoli-table">
+      <thead>
+        <tr>
+          <th>Codice</th><th>Descrizione</th><th>Prezzo</th><th>Sconto%</th><th>Margine%</th>
+          <th>Netto</th><th>Trasporto</th><th>Installazione</th><th>Q.ta</th><th>Totale</th><th>Azioni</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
-    <section id="listino-section">
-      <h2>▌Seleziona Articolo</h2>
-      <input type="text" id="searchInput" placeholder="🔍 Cerca...">
-      <select id="listinoSelect"></select>
-      <button onclick="aggiungiArticolo()">➕ Aggiungi</button>
-    </section>
+    <div id="report-section">
+      <button onclick="inviaReportWhatsApp()">📲 WhatsApp</button>
+      <button onclick="generaPDFReport()">📄 TXT Report</button>
+      <button onclick="inviaReportWhatsAppSenzaMargine()">📲 WhatsApp no margine</button>
+      <button onclick="generaTXTReportSenzaMargine()">📄 TXT no margine</button>
+    </div>
+    <div id="csvError" style="color:red;display:none;">Errore nel caricamento del CSV.</div>
+  </div>
 
-    <section id="articoli-section">
-      <h2>▌Articoli</h2>
-      <table id="articoli-table">
-        <thead>
-          <tr>
-            <th>Codice</th><th>Descrizione</th><th>Prezzo</th><th>Sconto %</th><th>Margine %</th><th>Totale</th>
-            <th>Trasporto</th><th>Installazione</th><th>Q.tà</th><th>Gran Tot</th><th>Azioni</th>
-          </tr>
-        </thead>
-        <tbody id="articoli-body"></tbody>
-      </table>
-    </section>
-
-    <section id="totali-section">
-      <h2>▌Totali</h2>
-      <p>Totale Netto: <span id="totaleNetto">0.00€</span></p>
-      <p>Totale Complessivo: <span id="totaleComplessivo">0.00€</span></p>
-    </section>
-  </main>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
