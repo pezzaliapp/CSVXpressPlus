@@ -1,75 +1,45 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CSVXpressPlus</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
-  <meta name="theme-color" content="#ffffff">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <div class="logo-container">
-      <img src="icon/CSVXpressPlus-1024.png" alt="CSVXpressPlus Logo" class="logo">
-      <h1>CSVXpressPlus</h1>
-    </div>
+    <h1>CSVXpressPlus - Commodore Edition</h1>
   </header>
-  
+
   <main>
-    <section id="upload-section">
-      <h2>Carica Listino CSV</h2>
-      <input type="file" id="csvFileInput" accept=".csv">
-      <p id="csvError" style="color: red; display: none;">Errore nel caricamento del file CSV.</p>
+    <section>
+      <label for="search">Filtra e Seleziona Articolo dal Listino:</label>
+      <input type="text" id="search" placeholder="Inserisci codice o descrizione" />
+      <select id="articolo-select"></select>
+      <button onclick="aggiungiArticolo()">Aggiungi Articolo Selezionato</button>
     </section>
 
-    <section id="listino-section">
-      <h2>Filtra e Seleziona Articolo dal Listino</h2>
-      <label for="searchListino">Cerca: </label>
-      <input type="text" id="searchListino" placeholder="Inserisci codice o descrizione">
-      <select id="listinoSelect"></select>
-      <button onclick="aggiungiArticoloDaListino()">Aggiungi Articolo Selezionato</button>
-    </section>
-
-    <section id="articoli-section">
+    <section>
       <h2>Articoli Aggiunti</h2>
-      <table id="articoli-table" border="1">
+      <table id="articoli-table">
         <thead>
-  <tr>
-    <th>Codice</th>
-    <th>Descrizione</th>
-    <th>Prezzo Lordo</th>
-    <th>Sconto %</th>
-    <th>Margine %</th>
-    <th>Totale</th>
-    <th colspan="5"></th>
-  </tr>
-  <tr>
-    <th colspan="6"></th>
-    <th>Trasporto</th>
-    <th>Installazione</th>
-    <th>Q.tà</th>
-    <th>Gran Tot</th>
-    <th>Azioni</th>
-  </tr>
-</thead>
-        <tbody></tbody>
+          <tr>
+            <th>Codice</th><th>Descrizione</th><th>Prezzo Lordo</th><th>Sconto %</th><th>Margine %</th><th>Totale</th>
+          </tr>
+        </thead>
+        <tbody id="articoli-body">
+          <!-- righe dinamiche -->
+        </tbody>
       </table>
     </section>
 
-    <section id="report-section">
-  <h2>Report Articoli</h2>
-  <button onclick="inviaReportWhatsApp()">Invia Report su WhatsApp</button>
-  <button onclick="generaPDFReport()">Genera TXT Report</button>
-  <br><br>
-  <button onclick="inviaReportWhatsAppSenzaMargine()">Invia Report su WhatsApp Senza Margine</button>
-  <button onclick="generaTXTReportSenzaMargine()">Genera TXT Report Senza Margine</button>
-</section>
+    <section id="totaleGenerale">
+      <p><strong>Totale Netto</strong> (senza Trasporto/Installazione): <span id="totaleNetto">0.00€</span></p>
+      <p><strong>Totale Complessivo</strong> (inclusi Trasporto/Installazione): <span id="totaleComplessivo">0.00€</span></p>
+    </section>
   </main>
-  
-  <!-- Librerie necessarie -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <script src="app.js"></script>
 </body>
 </html>

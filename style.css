@@ -1,121 +1,56 @@
+
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Courier New', monospace;
+  background-color: #2d2d2d;
+  color: #00ff00;
   margin: 0;
   padding: 0;
-  background-color: #f4f4f4;
-  color: #333;
 }
 
 header {
-  background-color: #2196f3;
-  color: white;
+  background-color: #000080;
+  color: #fff;
   padding: 1em;
   text-align: center;
-}
-
-.logo-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-.logo {
-  height: 40px;
-  width: 40px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 main {
   padding: 1em;
-  max-width: 900px;
-  margin: auto;
-  background-color: white;
-  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
 }
 
 section {
   margin-bottom: 2em;
 }
 
-input[type="file"],
-input[type="text"],
-input[type="number"],
-select,
+input, select, button {
+  font-family: inherit;
+  font-size: 1em;
+  padding: 0.3em;
+  margin: 0.5em 0;
+  background: #111;
+  color: #00ff00;
+  border: 1px solid #00ff00;
+}
+
 button {
-  display: block;
-  margin-top: 0.5em;
-  margin-bottom: 1em;
-  padding: 0.5em;
-  width: 100%;
-  max-width: 400px;
+  cursor: pointer;
 }
 
-input[type="checkbox"] {
-  margin-right: 0.5em;
-}
-
-#articoli-table {
+table {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 1em;
 }
 
-#articoli-table th,
-#articoli-table td {
+th, td {
+  border: 1px solid #00ff00;
   padding: 0.5em;
   text-align: center;
 }
 
-#articoli-table input[type="number"] {
-  width: 80px;
-  text-align: right;
-}
-
-button {
-  background-color: #2196f3;
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-}
-
-button:hover {
-  background-color: #1976d2;
-}
-
 #totaleGenerale {
-  background-color: #f0f8ff;
-  border: 1px solid #2196f3;
+  border: 1px dashed #00ff00;
   padding: 1em;
-  margin-bottom: 1em;
-  font-size: 1.1em;
-  line-height: 1.6;
-}
-/* Evidenzia le righe alternate (prima + seconda insieme) */
-#articoli-table tr:nth-child(4n-3),
-#articoli-table tr:nth-child(4n-2) {
-  background-color: #fafafa;
-}
-
-/* Bordi più chiari e righe più distanziate */
-#articoli-table tr:nth-child(odd) td {
-  border-bottom: 1px solid #ddd;
-}
-
-/* Separa visivamente la seconda riga */
-#articoli-table tr:nth-child(even) td {
-  background-color: #fefefe;
-  border-top: none;
-}
-
-/* Migliora leggibilità intestazioni */
-#articoli-table thead tr th {
-  background-color: #e3f2fd;
-  border-bottom: 2px solid #2196f3;
-}
-
-/* Allinea meglio contenuti e pulsanti */
-#articoli-table td input[type="number"] {
-  text-align: right;
-  padding: 0.25em;
 }
