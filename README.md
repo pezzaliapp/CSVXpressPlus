@@ -10,6 +10,7 @@ CSVXpress è una **PWA (Progressive Web App)** sviluppata per gestire e filtrare
 - 🔍 **Filtro e ricerca** per selezionare velocemente un articolo dal listino.
 - ➕ **Aggiunta di articoli alla tabella** con dettagli personalizzabili.
 - 📊 **Calcolo automatico di prezzi** con gestione di sconto, margine, trasporto e installazione.
+- ➕➕ **Calcolo differenza sconto** con dettagli personalizzabili.
 - 💾 **PWA installabile** su PC e smartphone per un utilizzo rapido.
 
 ---
