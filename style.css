@@ -1,33 +1,72 @@
-
 body {
-  background-color: black;
-  color: #00ff00;
-  font-family: "Courier New", monospace;
+  font-family: monospace;
   margin: 0;
   padding: 0;
+  background-color: #000033;
+  color: #00FFAA;
 }
-h1 {
-  text-align: center;
-  margin: 1em;
-  color: #00ff00;
-}
-main {
-  background-color: #000088;
+
+header {
+  background-color: #001144;
   padding: 1em;
-  margin: 1em;
-  overflow-x: auto;
+  text-align: center;
 }
+
+.logo-container h1 {
+  font-size: 1.8em;
+  margin: 0;
+  color: #00FFAA;
+}
+
+main {
+  padding: 1em;
+}
+
+section {
+  margin-bottom: 2em;
+}
+
 input, select, button {
-  margin: 0.3em 0;
-  font-family: "Courier New", monospace;
+  font-family: monospace;
+  font-size: 1em;
+  padding: 0.5em;
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 1em;
+  background-color: #002244;
+  color: #00FFAA;
+  border: 1px solid #00FFAA;
 }
+
+button:hover {
+  background-color: #003355;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
-  color: #00ff00;
+  font-size: 0.85em;
 }
+
 th, td {
-  border: 1px solid #00ff00;
-  padding: 0.3em;
-  font-size: 0.9em;
+  border: 1px solid #00FFAA;
+  padding: 0.4em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+  th {
+    display: none;
+  }
+  td {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5em;
+    border: none;
+    border-bottom: 1px solid #00FFAA;
+  }
 }

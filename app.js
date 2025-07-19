@@ -3,96 +3,86 @@ let listino = [];
 let articoliAggiunti = [];
 
 document.getElementById("csvFileInput").addEventListener("change", handleCSVUpload);
-document.getElementById("searchListino").addEventListener("input", aggiornaListinoSelect);
+document.getElementById("searchInput").addEventListener("input", aggiornaListinoSelect);
 
 function handleCSVUpload(event) {
   const file = event.target.files[0];
-  if (!file) return;
   const reader = new FileReader();
   reader.onload = function (e) {
-    const text = e.target.result;
-    listino = parseCSV(text);
+    const rows = e.target.result.split('\n').filter(r => r.trim() !== "");
+    listino = rows.map(r => {
+      const [codice, descrizione, prezzo] = r.split(';');
+      return { codice, descrizione, prezzo: parseFloat(prezzo) };
+    });
     aggiornaListinoSelect();
   };
   reader.readAsText(file);
 }
 
-function parseCSV(text) {
-  const righe = text.split("\n");
-  return righe.map(r => {
-    const c = r.split("\t");
-    return { codice: c[0], descrizione: c[1], prezzo: parseFloat(c[2].replace('€','').replace(',','.')) };
-  }).filter(r => r.codice && r.descrizione && !isNaN(r.prezzo));
-}
-
 function aggiornaListinoSelect() {
-  const select = document.getElementById("selectArticolo");
-  const search = document.getElementById("searchListino").value.toLowerCase();
+  const select = document.getElementById("listinoSelect");
+  const searchTerm = document.getElementById("searchInput").value.toLowerCase();
   select.innerHTML = "";
-  listino
-    .filter(a => a.codice.toLowerCase().includes(search) || a.descrizione.toLowerCase().includes(search))
-    .forEach(a => {
-      const opt = document.createElement("option");
-      opt.value = a.codice;
-      opt.textContent = `${a.codice} – ${a.descrizione} – €${a.prezzo}`;
-      opt.dataset.prezzo = a.prezzo;
-      opt.dataset.descrizione = a.descrizione;
-      select.appendChild(opt);
-    });
+  listino.filter(item =>
+    item.codice.toLowerCase().includes(searchTerm) ||
+    item.descrizione.toLowerCase().includes(searchTerm)
+  ).forEach(item => {
+    const option = document.createElement("option");
+    option.value = item.codice;
+    option.textContent = `${item.codice} - ${item.descrizione} - €${item.prezzo}`;
+    select.appendChild(option);
+  });
 }
 
 function aggiungiArticolo() {
-  const select = document.getElementById("selectArticolo");
-  const codice = select.value;
-  if (!codice) return;
-  const option = select.selectedOptions[0];
-  const descrizione = option.dataset.descrizione;
-  const prezzo = parseFloat(option.dataset.prezzo);
-  articoliAggiunti.push({ codice, descrizione, prezzo, sconto: 0, margine: 0, trasporto: 0, installazione: 0, quantita: 1 });
-  aggiornaTabella();
+  const codice = document.getElementById("listinoSelect").value;
+  const articolo = listino.find(a => a.codice === codice);
+  if (!articolo) return;
+
+  const tbody = document.getElementById("articoli-body");
+  const row = document.createElement("tr");
+
+  row.innerHTML = `
+    <td>${articolo.codice}</td>
+    <td>${articolo.descrizione}</td>
+    <td>${articolo.prezzo}€</td>
+    <td><input type="number" value="0" onchange="aggiornaTotali()" /></td>
+    <td><input type="number" value="0" onchange="aggiornaTotali()" /></td>
+    <td class="totale">0.00€</td>
+    <td><input type="number" value="0" onchange="aggiornaTotali()" /></td>
+    <td><input type="number" value="0" onchange="aggiornaTotali()" /></td>
+    <td><input type="number" value="1" onchange="aggiornaTotali()" /></td>
+    <td class="granTot">0.00€</td>
+    <td><button onclick="this.parentElement.parentElement.remove(); aggiornaTotali()">Rimuovi</button></td>
+  `;
+
+  tbody.appendChild(row);
+  aggiornaTotali();
 }
 
-function aggiornaTabella() {
-  const tbody = document.getElementById("tabellaArticoli");
-  tbody.innerHTML = "";
-  let totaleNetto = 0;
-  let totaleComplessivo = 0;
+function aggiornaTotali() {
+  const rows = document.querySelectorAll("#articoli-body tr");
+  let netto = 0;
+  let totale = 0;
 
-  articoliAggiunti.forEach((art, index) => {
-    const tr = document.createElement("tr");
-    const totale = art.prezzo * (1 - art.sconto / 100);
-    const granTot = (totale + art.trasporto + art.installazione) * art.quantita;
-    totaleNetto += totale * art.quantita;
-    totaleComplessivo += granTot;
+  rows.forEach(row => {
+    const prezzo = parseFloat(row.cells[2].textContent.replace("€", ""));
+    const sconto = parseFloat(row.cells[3].querySelector("input").value) || 0;
+    const margine = parseFloat(row.cells[4].querySelector("input").value) || 0;
+    const trasporto = parseFloat(row.cells[6].querySelector("input").value) || 0;
+    const installazione = parseFloat(row.cells[7].querySelector("input").value) || 0;
+    const quantita = parseFloat(row.cells[8].querySelector("input").value) || 1;
 
-    tr.innerHTML = \`
-      <td>\${art.codice}</td>
-      <td>\${art.descrizione}</td>
-      <td>\${art.prezzo}€</td>
-      <td><input type="number" value="\${art.sconto}" onchange="modificaCampo(\${index}, 'sconto', this.value)"></td>
-      <td><input type="number" value="\${art.margine}" onchange="modificaCampo(\${index}, 'margine', this.value)"></td>
-      <td>\${totale.toFixed(2)}€</td>
-      <td><input type="number" value="\${art.trasporto}" onchange="modificaCampo(\${index}, 'trasporto', this.value)"></td>
-      <td><input type="number" value="\${art.installazione}" onchange="modificaCampo(\${index}, 'installazione', this.value)"></td>
-      <td><input type="number" value="\${art.quantita}" onchange="modificaCampo(\${index}, 'quantita', this.value)"></td>
-      <td>\${granTot.toFixed(2)}€</td>
-      <td><button onclick="rimuoviArticolo(\${index})">Rimuovi</button></td>
-    \`;
-    tbody.appendChild(tr);
+    const nettoRiga = (prezzo * (1 - sconto / 100)) * quantita;
+    const granTot = nettoRiga + trasporto + installazione;
+
+    row.cells[5].textContent = nettoRiga.toFixed(2) + "€";
+    row.cells[9].textContent = granTot.toFixed(2) + "€";
+
+    netto += nettoRiga;
+    totale += granTot;
   });
 
-  document.getElementById("totaleGenerale").innerHTML = \`
-    <strong>Totale Netto (senza Trasporto/Installazione):</strong> \${totaleNetto.toFixed(2)}€<br>
-    <strong>Totale Complessivo (inclusi Trasporto/Installazione):</strong> \${totaleComplessivo.toFixed(2)}€
-  \`;
-}
-
-function modificaCampo(index, campo, valore) {
-  articoliAggiunti[index][campo] = parseFloat(valore) || 0;
-  aggiornaTabella();
-}
-
-function rimuoviArticolo(index) {
-  articoliAggiunti.splice(index, 1);
-  aggiornaTabella();
+  document.getElementById("totaleNetto").textContent = netto.toFixed(2) + "€";
+  document.getElementById("totaleComplessivo").textContent = totale.toFixed(2) + "€";
 }
