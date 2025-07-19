@@ -1,41 +1,36 @@
 
 body {
-  font-family: 'Courier New', monospace;
-  background-color: #2d2d2d;
+  font-family: "Courier New", monospace;
+  background-color: #2b2b2b;
   color: #00ff00;
   margin: 0;
   padding: 0;
 }
 
 header {
-  background-color: #000080;
-  color: #fff;
+  background-color: #1a1a1a;
   padding: 1em;
   text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 2px;
 }
 
 main {
   padding: 1em;
-}
-
-section {
-  margin-bottom: 2em;
+  max-width: 900px;
+  margin: auto;
+  background-color: #000080;
+  color: #00ff00;
 }
 
 input, select, button {
-  font-family: inherit;
-  font-size: 1em;
-  padding: 0.3em;
-  margin: 0.5em 0;
-  background: #111;
+  font-family: "Courier New", monospace;
+  margin-top: 0.5em;
+  margin-bottom: 1em;
+  padding: 0.5em;
+  width: 100%;
+  max-width: 400px;
+  background-color: #001f3f;
   color: #00ff00;
   border: 1px solid #00ff00;
-}
-
-button {
-  cursor: pointer;
 }
 
 table {
@@ -48,9 +43,4 @@ th, td {
   border: 1px solid #00ff00;
   padding: 0.5em;
   text-align: center;
-}
-
-#totaleGenerale {
-  border: 1px dashed #00ff00;
-  padding: 1em;
 }

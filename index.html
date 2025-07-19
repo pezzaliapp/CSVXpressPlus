@@ -4,20 +4,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CSVXpressPlus</title>
+  <title>CSVXpressPlus o64</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <h1>CSVXpressPlus - Commodore Edition</h1>
+    <div class="logo-container">
+      <h1>CSVXpressPlus</h1>
+    </div>
   </header>
-
   <main>
     <section>
-      <label for="search">Filtra e Seleziona Articolo dal Listino:</label>
-      <input type="text" id="search" placeholder="Inserisci codice o descrizione" />
-      <select id="articolo-select"></select>
+      <h2>Filtra e Seleziona Articolo dal Listino</h2>
+      <input type="text" id="searchInput" placeholder="Inserisci codice o descrizione" />
+      <select id="listinoSelect">
+        <option value="">— Carica un CSV —</option>
+      </select>
       <button onclick="aggiungiArticolo()">Aggiungi Articolo Selezionato</button>
+      <input type="file" id="csvFileInput" accept=".csv">
     </section>
 
     <section>
@@ -25,21 +29,28 @@
       <table id="articoli-table">
         <thead>
           <tr>
-            <th>Codice</th><th>Descrizione</th><th>Prezzo Lordo</th><th>Sconto %</th><th>Margine %</th><th>Totale</th>
+            <th>Codice</th>
+            <th>Descrizione</th>
+            <th>Prezzo Lordo</th>
+            <th>Sconto %</th>
+            <th>Margine %</th>
+            <th>Totale</th>
+            <th>Trasporto</th>
+            <th>Installazione</th>
+            <th>Q.tà</th>
+            <th>Gran Tot</th>
+            <th>Azioni</th>
           </tr>
         </thead>
-        <tbody id="articoli-body">
-          <!-- righe dinamiche -->
-        </tbody>
+        <tbody id="articoli-body"></tbody>
       </table>
     </section>
 
-    <section id="totaleGenerale">
-      <p><strong>Totale Netto</strong> (senza Trasporto/Installazione): <span id="totaleNetto">0.00€</span></p>
-      <p><strong>Totale Complessivo</strong> (inclusi Trasporto/Installazione): <span id="totaleComplessivo">0.00€</span></p>
-    </section>
+    <div id="totaleGenerale">
+      <p><strong>Totale Netto (senza Trasporto/Installazione):</strong> <span id="totaleNetto">0.00€</span></p>
+      <p><strong>Totale Complessivo (inclusi Trasporto/Installazione):</strong> <span id="totaleComplessivo">0.00€</span></p>
+    </div>
   </main>
-
   <script src="app.js"></script>
 </body>
 </html>

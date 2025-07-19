@@ -2,112 +2,87 @@
 let listino = [];
 let articoliAggiunti = [];
 
-document.addEventListener("DOMContentLoaded", function () {
-  document.getElementById("csvFileInput").addEventListener("change", handleCSVUpload);
-  document.getElementById("searchListino").addEventListener("input", aggiornaListinoSelect);
-});
+document.getElementById("csvFileInput").addEventListener("change", handleCSVUpload);
+document.getElementById("searchInput").addEventListener("input", aggiornaListinoSelect);
 
 function handleCSVUpload(event) {
   const file = event.target.files[0];
-  if (!file) return;
-
-  Papa.parse(file, {
-    header: true,
-    skipEmptyLines: true,
-    complete: function (results) {
-      listino = results.data.map(row => ({
-        codice: row.Codice,
-        descrizione: row.Descrizione,
-        prezzo: parseFloat(row.Prezzo.replace(",", ".")) || 0
-      }));
-      aggiornaListinoSelect();
-    },
-    error: function () {
-      document.getElementById("csvError").style.display = "block";
-    }
-  });
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const rows = e.target.result.split('\n').filter(r => r.trim() !== "");
+    listino = rows.map(r => {
+      const [codice, descrizione, prezzo] = r.split(';');
+      return { codice, descrizione, prezzo: parseFloat(prezzo) };
+    });
+    aggiornaListinoSelect();
+  };
+  reader.readAsText(file);
 }
 
 function aggiornaListinoSelect() {
   const select = document.getElementById("listinoSelect");
-  const filtro = document.getElementById("searchListino").value.toLowerCase();
+  const searchTerm = document.getElementById("searchInput").value.toLowerCase();
   select.innerHTML = "";
-
-  listino
-    .filter(item =>
-      item.codice.toLowerCase().includes(filtro) ||
-      item.descrizione.toLowerCase().includes(filtro)
-    )
-    .forEach((item, index) => {
-      const option = document.createElement("option");
-      option.value = index;
-      option.textContent = `${item.codice} - ${item.descrizione} - €${item.prezzo.toFixed(2)}`;
-      select.appendChild(option);
-    });
+  listino.filter(item =>
+    item.codice.toLowerCase().includes(searchTerm) ||
+    item.descrizione.toLowerCase().includes(searchTerm)
+  ).forEach(item => {
+    const option = document.createElement("option");
+    option.value = item.codice;
+    option.textContent = `${item.codice} - ${item.descrizione} - €${item.prezzo}`;
+    select.appendChild(option);
+  });
 }
 
-function aggiungiArticoloDaListino() {
-  const index = document.getElementById("listinoSelect").value;
-  const articolo = listino[index];
+function aggiungiArticolo() {
+  const codice = document.getElementById("listinoSelect").value;
+  const articolo = listino.find(a => a.codice === codice);
   if (!articolo) return;
 
-  const tbody = document.querySelector("#articoli-table tbody");
+  const tbody = document.getElementById("articoli-body");
+  const row = document.createElement("tr");
 
-  const riga1 = document.createElement("tr");
-  riga1.innerHTML = `
+  row.innerHTML = `
     <td>${articolo.codice}</td>
     <td>${articolo.descrizione}</td>
-    <td>${articolo.prezzo.toFixed(2)}</td>
-    <td><input type="number" value="0" onchange="ricalcola()"></td>
-    <td><input type="number" value="0" onchange="ricalcola()"></td>
-    <td class="totale">0.00</td>
-    <td colspan="5"></td>
+    <td>${articolo.prezzo}€</td>
+    <td><input type="number" value="0" onchange="aggiornaTotali()" /></td>
+    <td><input type="number" value="0" onchange="aggiornaTotali()" /></td>
+    <td class="totale">0.00€</td>
+    <td><input type="number" value="0" onchange="aggiornaTotali()" /></td>
+    <td><input type="number" value="0" onchange="aggiornaTotali()" /></td>
+    <td><input type="number" value="1" onchange="aggiornaTotali()" /></td>
+    <td class="granTot">0.00€</td>
+    <td><button onclick="this.parentElement.parentElement.remove(); aggiornaTotali()">Rimuovi</button></td>
   `;
 
-  const riga2 = document.createElement("tr");
-  riga2.innerHTML = `
-    <td colspan="6"></td>
-    <td><input type="number" value="0" onchange="ricalcola()"></td>
-    <td><input type="number" value="0" onchange="ricalcola()"></td>
-    <td><input type="number" value="1" onchange="ricalcola()"></td>
-    <td class="grantot">0.00</td>
-    <td><button onclick="rimuoviRighe(this)">🗑️</button></td>
-  `;
-
-  tbody.appendChild(riga1);
-  tbody.appendChild(riga2);
-  ricalcola();
+  tbody.appendChild(row);
+  aggiornaTotali();
 }
 
-function rimuoviRighe(button) {
-  const row = button.closest("tr");
-  const prevRow = row.previousElementSibling;
-  row.remove();
-  if (prevRow) prevRow.remove();
-  ricalcola();
-}
+function aggiornaTotali() {
+  const rows = document.querySelectorAll("#articoli-body tr");
+  let netto = 0;
+  let totale = 0;
 
-function ricalcola() {
-  const tbody = document.querySelector("#articoli-table tbody");
-  const rows = Array.from(tbody.querySelectorAll("tr"));
-  for (let i = 0; i < rows.length; i += 2) {
-    const r1 = rows[i];
-    const r2 = rows[i + 1];
-    if (!r1 || !r2) continue;
+  rows.forEach(row => {
+    const prezzo = parseFloat(row.cells[2].textContent.replace("€", ""));
+    const sconto = parseFloat(row.cells[3].querySelector("input").value) || 0;
+    const margine = parseFloat(row.cells[4].querySelector("input").value) || 0;
+    const trasporto = parseFloat(row.cells[6].querySelector("input").value) || 0;
+    const installazione = parseFloat(row.cells[7].querySelector("input").value) || 0;
+    const quantita = parseFloat(row.cells[8].querySelector("input").value) || 1;
 
-    const prezzo = parseFloat(r1.cells[2].textContent) || 0;
-    const sconto = parseFloat(r1.cells[3].querySelector("input").value) || 0;
-    const margine = parseFloat(r1.cells[4].querySelector("input").value) || 0;
+    const nettoRiga = (prezzo * (1 - sconto / 100)) * quantita;
+    const granTot = nettoRiga + trasporto + installazione;
 
-    const trasporto = parseFloat(r2.cells[6].querySelector("input").value) || 0;
-    const installazione = parseFloat(r2.cells[7].querySelector("input").value) || 0;
-    const qta = parseFloat(r2.cells[8].querySelector("input").value) || 1;
+    row.cells[5].textContent = nettoRiga.toFixed(2) + "€";
+    row.cells[9].textContent = granTot.toFixed(2) + "€";
 
-    const prezzoNetto = prezzo * (1 - sconto / 100);
-    const totale = prezzoNetto;
-    const grantot = (prezzoNetto + trasporto + installazione) * qta;
+    netto += nettoRiga;
+    totale += granTot;
+  });
 
-    r1.querySelector(".totale").textContent = totale.toFixed(2);
-    r2.querySelector(".grantot").textContent = grantot.toFixed(2);
-  }
+  document.getElementById("totaleNetto").textContent = netto.toFixed(2) + "€";
+  document.getElementById("totaleComplessivo").textContent = totale.toFixed(2) + "€";
 }
