@@ -1,43 +1,77 @@
 
-let articoli = [
-  { codice: "00100208", descrizione: "PUMA CE 1ph 230V 50-60Hz", prezzo: 17000 },
-  { codice: "00100302", descrizione: "F 524S CE 3ph 400V", prezzo: 3880 }
-];
+let listino = [];
+let articoliAggiunti = [];
 
-function aggiornaSelect() {
-  const select = document.getElementById("articolo-select");
-  select.innerHTML = "";
-  articoli.forEach((art, idx) => {
-    const opt = document.createElement("option");
-    opt.value = idx;
-    opt.textContent = `${art.codice} - ${art.descrizione} - €${art.prezzo}`;
-    select.appendChild(opt);
+document.addEventListener("DOMContentLoaded", function () {
+  document.getElementById("csvFileInput").addEventListener("change", handleCSVUpload);
+  document.getElementById("searchListino").addEventListener("input", aggiornaListinoSelect);
+});
+
+function handleCSVUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: function (results) {
+      listino = results.data.map(row => ({
+        codice: row.Codice,
+        descrizione: row.Descrizione,
+        prezzo: parseFloat(row.Prezzo.replace(",", ".")) || 0
+      }));
+      aggiornaListinoSelect();
+    },
+    error: function () {
+      document.getElementById("csvError").style.display = "block";
+    }
   });
 }
 
-function aggiungiArticolo() {
-  const idx = document.getElementById("articolo-select").value;
-  const art = articoli[idx];
+function aggiornaListinoSelect() {
+  const select = document.getElementById("listinoSelect");
+  const filtro = document.getElementById("searchListino").value.toLowerCase();
+  select.innerHTML = "";
 
-  const tbody = document.getElementById("articoli-body");
+  listino
+    .filter(item =>
+      item.codice.toLowerCase().includes(filtro) ||
+      item.descrizione.toLowerCase().includes(filtro)
+    )
+    .forEach((item, index) => {
+      const option = document.createElement("option");
+      option.value = index;
+      option.textContent = `${item.codice} - ${item.descrizione} - €${item.prezzo.toFixed(2)}`;
+      select.appendChild(option);
+    });
+}
+
+function aggiungiArticoloDaListino() {
+  const index = document.getElementById("listinoSelect").value;
+  const articolo = listino[index];
+  if (!articolo) return;
+
+  const tbody = document.querySelector("#articoli-table tbody");
 
   const riga1 = document.createElement("tr");
   riga1.innerHTML = `
-    <td>${art.codice}</td>
-    <td>${art.descrizione}</td>
-    <td>${art.prezzo}€</td>
-    <td><input type="number" value="0" onchange="ricalcola(this)"/></td>
-    <td><input type="number" value="0" onchange="ricalcola(this)"/></td>
-    <td class="totale">0.00€</td>
+    <td>${articolo.codice}</td>
+    <td>${articolo.descrizione}</td>
+    <td>${articolo.prezzo.toFixed(2)}</td>
+    <td><input type="number" value="0" onchange="ricalcola()"></td>
+    <td><input type="number" value="0" onchange="ricalcola()"></td>
+    <td class="totale">0.00</td>
+    <td colspan="5"></td>
   `;
 
   const riga2 = document.createElement("tr");
   riga2.innerHTML = `
-    <td colspan="2"></td>
-    <td colspan="1"><input type="number" value="0" placeholder="Trasporto" onchange="ricalcola(this)"/></td>
-    <td colspan="1"><input type="number" value="0" placeholder="Installazione" onchange="ricalcola(this)"/></td>
-    <td colspan="1"><input type="number" value="1" placeholder="Q.tà" onchange="ricalcola(this)"/></td>
-    <td class="granTot">0.00€</td>
+    <td colspan="6"></td>
+    <td><input type="number" value="0" onchange="ricalcola()"></td>
+    <td><input type="number" value="0" onchange="ricalcola()"></td>
+    <td><input type="number" value="1" onchange="ricalcola()"></td>
+    <td class="grantot">0.00</td>
+    <td><button onclick="rimuoviRighe(this)">🗑️</button></td>
   `;
 
   tbody.appendChild(riga1);
@@ -45,37 +79,35 @@ function aggiungiArticolo() {
   ricalcola();
 }
 
+function rimuoviRighe(button) {
+  const row = button.closest("tr");
+  const prevRow = row.previousElementSibling;
+  row.remove();
+  if (prevRow) prevRow.remove();
+  ricalcola();
+}
+
 function ricalcola() {
-  let totaleNetto = 0;
-  let totaleComplessivo = 0;
-
-  const tbody = document.getElementById("articoli-body");
-  const rows = tbody.querySelectorAll("tr");
-
+  const tbody = document.querySelector("#articoli-table tbody");
+  const rows = Array.from(tbody.querySelectorAll("tr"));
   for (let i = 0; i < rows.length; i += 2) {
     const r1 = rows[i];
-    const r2 = rows[i+1];
+    const r2 = rows[i + 1];
+    if (!r1 || !r2) continue;
 
-    const prezzo = parseFloat(r1.cells[2].textContent.replace("€","")) || 0;
+    const prezzo = parseFloat(r1.cells[2].textContent) || 0;
     const sconto = parseFloat(r1.cells[3].querySelector("input").value) || 0;
     const margine = parseFloat(r1.cells[4].querySelector("input").value) || 0;
 
-    const netto = prezzo * (1 - sconto / 100);
-    r1.cells[5].textContent = netto.toFixed(2) + "€";
+    const trasporto = parseFloat(r2.cells[6].querySelector("input").value) || 0;
+    const installazione = parseFloat(r2.cells[7].querySelector("input").value) || 0;
+    const qta = parseFloat(r2.cells[8].querySelector("input").value) || 1;
 
-    const trasporto = parseFloat(r2.cells[2].querySelector("input").value) || 0;
-    const installazione = parseFloat(r2.cells[3].querySelector("input").value) || 0;
-    const qty = parseFloat(r2.cells[4].querySelector("input").value) || 1;
+    const prezzoNetto = prezzo * (1 - sconto / 100);
+    const totale = prezzoNetto;
+    const grantot = (prezzoNetto + trasporto + installazione) * qta;
 
-    const granTot = (netto + trasporto + installazione) * qty;
-    r2.cells[5].textContent = granTot.toFixed(2) + "€";
-
-    totaleNetto += netto * qty;
-    totaleComplessivo += granTot;
+    r1.querySelector(".totale").textContent = totale.toFixed(2);
+    r2.querySelector(".grantot").textContent = grantot.toFixed(2);
   }
-
-  document.getElementById("totaleNetto").textContent = totaleNetto.toFixed(2) + "€";
-  document.getElementById("totaleComplessivo").textContent = totaleComplessivo.toFixed(2) + "€";
 }
-
-document.addEventListener("DOMContentLoaded", aggiornaSelect);
