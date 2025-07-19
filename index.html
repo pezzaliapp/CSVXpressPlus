@@ -1,46 +1,64 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>o64 - Scheda Ordine</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CSVXpressPlus</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+  <meta name="theme-color" content="#000000">
 </head>
 <body>
-  <div class="c64-wrapper">
-    <h1>Scheda Ordine</h1>
-    <div id="upload-section">
-      <label for="csvFileInput">📁 Carica Listino CSV:</label>
-      <input type="file" id="csvFileInput" accept=".csv"><br>
-      <label for="searchListino">🔎 Cerca Articolo:</label>
-      <input type="text" id="searchListino" placeholder="Cerca nel listino..."><br>
-      <select id="listinoSelect">
-        <option value="">— Seleziona dal listino —</option>
-      </select>
+  <header>
+    <h1>CSVXpressPlus</h1>
+  </header>
+
+  <main>
+    <section id="upload-section">
+      <label for="csvFileInput">📁 Carica CSV:</label>
+      <input type="file" id="csvFileInput" accept=".csv" />
+      <p id="csvError" style="color:red;display:none;">Errore nel caricamento del CSV</p>
+    </section>
+
+    <section>
+      <label for="searchListino">🔎 Cerca:</label>
+      <input type="text" id="searchListino" placeholder="Codice o descrizione" />
+      <select id="listinoSelect"></select>
       <button onclick="aggiungiArticoloDaListino()">Aggiungi</button>
-    </div>
+    </section>
 
-    <table id="articoli-table">
-      <thead>
-        <tr>
-          <th>Codice</th><th>Descrizione</th><th>Prezzo</th><th>Sconto%</th><th>Margine%</th>
-          <th>Netto</th><th>Trasporto</th><th>Installazione</th><th>Q.ta</th><th>Totale</th><th>Azioni</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <section>
+      <table id="articoli-table" border="1">
+        <thead>
+          <tr>
+            <th>Codice</th>
+            <th>Descrizione</th>
+            <th>Prezzo</th>
+            <th>Sconto %</th>
+            <th>Margine %</th>
+            <th>Totale</th>
+            <th>Trasporto</th>
+            <th>Installazione</th>
+            <th>Q.tà</th>
+            <th>Gran Tot</th>
+            <th>Azioni</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
 
-    <div id="report-section">
-      <button onclick="inviaReportWhatsApp()">📲 WhatsApp</button>
-      <button onclick="generaPDFReport()">📄 TXT Report</button>
-      <button onclick="inviaReportWhatsAppSenzaMargine()">📲 WhatsApp no margine</button>
-      <button onclick="generaTXTReportSenzaMargine()">📄 TXT no margine</button>
-    </div>
-    <div id="csvError" style="color:red;display:none;">Errore nel caricamento del CSV.</div>
-  </div>
+    <section id="report-section">
+      <button onclick="inviaReportWhatsApp()">WhatsApp</button>
+      <button onclick="generaPDFReport()">TXT</button>
+      <button onclick="inviaReportWhatsAppSenzaMargine()">WhatsApp senza margine</button>
+      <button onclick="generaTXTReportSenzaMargine()">TXT senza margine</button>
+    </section>
+  </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
