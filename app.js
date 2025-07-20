@@ -208,6 +208,7 @@ function rimuoviArticolo(index) {
 function aggiornaTotaliGenerali() {
   let totaleSenzaServizi = 0;
   let totaleConServizi = 0;
+  let totaleDifferenzaSconto = 0;
 
   articoliAggiunti.forEach(articolo => {
     const sconto = articolo.sconto || 0;
@@ -219,8 +220,13 @@ function aggiornaTotaliGenerali() {
     const conMargineRounded = roundTwo(conMargine);
     const quantita = articolo.quantita || 1;
 
+    const granTot = (conMargineRounded + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0)) * quantita;
+    const venduto = articolo.venduto || 0;
+    const differenza = venduto - roundTwo(granTot);
+
     totaleSenzaServizi += conMargineRounded * quantita;
-    totaleConServizi += (conMargineRounded + articolo.costoTrasporto + articolo.costoInstallazione) * quantita;
+    totaleConServizi += roundTwo(granTot);
+    totaleDifferenzaSconto += roundTwo(differenza);
   });
 
   let totaleDiv = document.getElementById("totaleGenerale");
@@ -231,11 +237,11 @@ function aggiornaTotaliGenerali() {
     document.getElementById("report-section").insertAdjacentElement("beforebegin", totaleDiv);
   }
 
-  if (!autoPopolaCosti) {
-    totaleDiv.innerHTML = `<strong>Totale Netto (senza Trasporto/Installazione):</strong> ${totaleSenzaServizi.toFixed(2)}€`;
-  } else {
-    totaleDiv.innerHTML = `<strong>Totale Netto (senza Trasporto/Installazione):</strong> ${totaleSenzaServizi.toFixed(2)}€<br><strong>Totale Complessivo (inclusi Trasporto/Installazione):</strong> ${totaleConServizi.toFixed(2)}€`;
-  }
+  let html = `<strong>Totale Netto (senza Trasporto/Installazione):</strong> ${totaleSenzaServizi.toFixed(2)}€<br>`;
+  html += `<strong>Totale Complessivo (inclusi Trasporto/Installazione):</strong> ${totaleConServizi.toFixed(2)}€<br>`;
+  html += `<strong>Totale Differenza Sconto:</strong> ${totaleDifferenzaSconto.toFixed(2)}€`;
+
+  totaleDiv.innerHTML = html;
 }
 
 function generaReportTesto() {
