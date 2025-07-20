@@ -17,5 +17,5 @@ CSVXpress è una **PWA (Progressive Web App)** sviluppata per gestire e filtrare
 ## 📥 **Installazione**
 ### **1️⃣ Clona il repository**
 ```sh
-git clone https://github.com/pezzaliapp/CSVXpress.git
-cd CSVXpress
+git clone https://github.com/pezzaliapp/CSVXpressPlus.git
+cd CSVXpressPlus
