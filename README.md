@@ -1,4 +1,4 @@
-# CSVXpress 🚀
+# CSVXpressPlus 🚀
 Semplice e Immediato per chi usa Listini ogni giorno
 
 CSVXpress è una **PWA (Progressive Web App)** sviluppata per gestire e filtrare **listini CSV**, selezionare articoli, calcolare prezzi con sconti e margini, e generare preventivi in modo semplice ed efficiente.
