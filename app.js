@@ -1,88 +1,346 @@
+// Registra il Service Worker (PWA)
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js')
+    .then(reg => console.log("Service Worker registrato", reg))
+    .catch(err => console.error("Service Worker non registrato", err));
+}
 
+// Variabili globali
 let listino = [];
 let articoliAggiunti = [];
+let autoPopolaCosti = true;
+let mostraDettagliServizi = true;
 
-document.getElementById("csvFileInput").addEventListener("change", handleCSVUpload);
-document.getElementById("searchInput").addEventListener("input", aggiornaListinoSelect);
+function roundTwo(num) {
+  return Math.round(num * 100) / 100;
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  document.getElementById("csvFileInput").addEventListener("change", handleCSVUpload);
+  document.getElementById("searchListino").addEventListener("input", aggiornaListinoSelect);
+
+  const checkbox1 = document.createElement("label");
+  checkbox1.innerHTML = `
+    <input type="checkbox" id="toggleCosti" checked onchange="togglePopolaCosti()"> Popola automaticamente Trasporto e Installazione
+  `;
+  document.getElementById("upload-section").appendChild(checkbox1);
+
+  const checkbox2 = document.createElement("label");
+  checkbox2.innerHTML = `
+    <br><input type="checkbox" id="toggleMostraServizi" checked> Mostra dettagli Trasporto/Installazione nel report
+  `;
+  document.getElementById("upload-section").appendChild(checkbox2);
+});
+
+function togglePopolaCosti() {
+  autoPopolaCosti = document.getElementById("toggleCosti").checked;
+  const secondCheckbox = document.getElementById("toggleMostraServizi");
+  secondCheckbox.disabled = !autoPopolaCosti;
+  mostraDettagliServizi = secondCheckbox.checked;
+
+  articoliAggiunti = articoliAggiunti.map(articolo => {
+    if (autoPopolaCosti) {
+      const listinoOriginale = listino.find(item => item.codice === articolo.codice);
+      return {
+        ...articolo,
+        costoTrasporto: listinoOriginale ? listinoOriginale.costoTrasporto : 0,
+        costoInstallazione: listinoOriginale ? listinoOriginale.costoInstallazione : 0
+      };
+    } else {
+      return {
+        ...articolo,
+        costoTrasporto: 0,
+        costoInstallazione: 0
+      };
+    }
+  });
+
+  aggiornaTabellaArticoli();
+  aggiornaTotaliGenerali();
+}
 
 function handleCSVUpload(event) {
   const file = event.target.files[0];
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    const rows = e.target.result.split('\n').filter(r => r.trim() !== "");
-    listino = rows.map(r => {
-      const [codice, descrizione, prezzo] = r.split(';');
-      return { codice, descrizione, prezzo: parseFloat(prezzo) };
-    });
-    aggiornaListinoSelect();
-  };
-  reader.readAsText(file);
+  if (!file) return;
+
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+      if (!results.data.length) {
+        document.getElementById("csvError").style.display = "block";
+        return;
+      }
+      listino = results.data.map(row => ({
+        codice: (row["Codice"] || "").trim(),
+        descrizione: (row["Descrizione"] || "").trim(),
+        prezzoLordo: parseFloat((row["PrezzoLordo"] || "0").replace(",", ".")) || 0,
+        sconto: 0,
+        margine: 0,
+        costoTrasporto: parseFloat((row["CostoTrasporto"] || "0").replace(",", ".")) || 0,
+        costoInstallazione: parseFloat((row["CostoInstallazione"] || "0").replace(",", ".")) || 0,
+        quantita: 1
+      }));
+      aggiornaListinoSelect();
+    },
+    error: function(err) {
+      console.error("Errore CSV:", err);
+      document.getElementById("csvError").style.display = "block";
+    }
+  });
 }
 
 function aggiornaListinoSelect() {
   const select = document.getElementById("listinoSelect");
-  const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+  const searchTerm = document.getElementById("searchListino").value.toLowerCase();
   select.innerHTML = "";
-  listino.filter(item =>
-    item.codice.toLowerCase().includes(searchTerm) ||
-    item.descrizione.toLowerCase().includes(searchTerm)
-  ).forEach(item => {
-    const option = document.createElement("option");
-    option.value = item.codice;
-    option.textContent = `${item.codice} - ${item.descrizione} - €${item.prezzo}`;
-    select.appendChild(option);
+
+  listino.forEach((item) => {
+    if (item.codice.toLowerCase().includes(searchTerm) || item.descrizione.toLowerCase().includes(searchTerm)) {
+      const option = document.createElement("option");
+      option.value = item.codice;
+      option.textContent = `${item.codice} - ${item.descrizione} - €${item.prezzoLordo}`;
+      select.appendChild(option);
+    }
   });
 }
 
-function aggiungiArticolo() {
-  const codice = document.getElementById("listinoSelect").value;
-  const articolo = listino.find(a => a.codice === codice);
-  if (!articolo) return;
+function aggiungiArticoloDaListino() {
+  const select = document.getElementById("listinoSelect");
+  if (!select.value) return;
 
-  const tbody = document.getElementById("articoli-body");
-  const row = document.createElement("tr");
+  const articolo = listino.find(item => item.codice === select.value);
+  if (!articolo) {
+    alert("Errore: articolo non trovato nel listino.");
+    return;
+  }
 
-  row.innerHTML = `
-    <td>${articolo.codice}</td>
-    <td>${articolo.descrizione}</td>
-    <td>${articolo.prezzo}€</td>
-    <td><input type="number" value="0" onchange="aggiornaTotali()" /></td>
-    <td><input type="number" value="0" onchange="aggiornaTotali()" /></td>
-    <td class="totale">0.00€</td>
-    <td><input type="number" value="0" onchange="aggiornaTotali()" /></td>
-    <td><input type="number" value="0" onchange="aggiornaTotali()" /></td>
-    <td><input type="number" value="1" onchange="aggiornaTotali()" /></td>
-    <td class="granTot">0.00€</td>
-    <td><button onclick="this.parentElement.parentElement.remove(); aggiornaTotali()">Rimuovi</button></td>
-  `;
+  const nuovoArticolo = { ...articolo };
+  if (!autoPopolaCosti) {
+    nuovoArticolo.costoTrasporto = 0;
+    nuovoArticolo.costoInstallazione = 0;
+  }
 
-  tbody.appendChild(row);
-  aggiornaTotali();
+  articoliAggiunti.push(nuovoArticolo);
+  aggiornaTabellaArticoli();
+  aggiornaTotaliGenerali();
 }
 
-function aggiornaTotali() {
-  const rows = document.querySelectorAll("#articoli-body tr");
-  let netto = 0;
-  let totale = 0;
+function aggiornaTabellaArticoli() {
+  const tableBody = document.querySelector("#articoli-table tbody");
+  tableBody.innerHTML = "";
 
-  rows.forEach(row => {
-    const prezzo = parseFloat(row.cells[2].textContent.replace("€", ""));
-    const sconto = parseFloat(row.cells[3].querySelector("input").value) || 0;
-    const margine = parseFloat(row.cells[4].querySelector("input").value) || 0;
-    const trasporto = parseFloat(row.cells[6].querySelector("input").value) || 0;
-    const installazione = parseFloat(row.cells[7].querySelector("input").value) || 0;
-    const quantita = parseFloat(row.cells[8].querySelector("input").value) || 1;
+  articoliAggiunti.forEach((articolo, index) => {
+    const sconto = articolo.sconto || 0;
+    const prezzoScontato = articolo.prezzoLordo * (1 - sconto / 100);
+    const totale = roundTwo(prezzoScontato);
 
-    const nettoRiga = (prezzo * (1 - sconto / 100)) * quantita;
-    const granTot = nettoRiga + trasporto + installazione;
+    const margine = articolo.margine || 0;
+    const conMargine = totale / (1 - margine / 100);
+    const conMargineRounded = roundTwo(conMargine);
+    const granTotale = (conMargineRounded + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0)) * (articolo.quantita || 1);
+    const granTotaleFinal = roundTwo(granTotale);
 
-    row.cells[5].textContent = nettoRiga.toFixed(2) + "€";
-    row.cells[9].textContent = granTot.toFixed(2) + "€";
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${articolo.codice}</td>
+      <td>${articolo.descrizione}</td>
+      <td>${articolo.prezzoLordo}€</td>
+      <td><input type="number" value="${articolo.sconto}" placeholder="%" data-index="${index}" data-field="sconto" oninput="aggiornaCampo(event)" /></td>
+      <td><input type="number" value="${articolo.margine}" placeholder="%" data-index="${index}" data-field="margine" oninput="aggiornaCampo(event)" /></td>
+      <td>${totale.toFixed(2)}€</td>
+      <td><input type="number" value="${articolo.costoTrasporto}" placeholder="€" data-index="${index}" data-field="costoTrasporto" oninput="aggiornaCampo(event)" /></td>
+      <td><input type="number" value="${articolo.costoInstallazione}" placeholder="€" data-index="${index}" data-field="costoInstallazione" oninput="aggiornaCampo(event)" /></td>
+      <td><input type="number" value="${articolo.quantita}" min="1" data-index="${index}" data-field="quantita" oninput="aggiornaCampo(event)" /></td>
+      <td>${granTotaleFinal.toFixed(2)}€</td>
+      <td><button onclick="rimuoviArticolo(${index})">Rimuovi</button></td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
 
-    netto += nettoRiga;
-    totale += granTot;
+function aggiornaCampo(event) {
+  const input = event.target;
+  const index = parseInt(input.getAttribute("data-index"));
+  const field = input.getAttribute("data-field");
+
+  let val = parseFloat(input.value.replace(",", ".")) || 0;
+  if ((field === "sconto" || field === "margine") && val < 0) val = 0;
+  if (field === "quantita" && val < 1) val = 1;
+
+  articoliAggiunti[index][field] = val;
+  aggiornaCalcoli(index);
+  aggiornaTotaliGenerali();
+}
+
+function aggiornaCalcoli(index) {
+  const articolo = articoliAggiunti[index];
+
+  const sconto = articolo.sconto || 0;
+  const prezzoLordo = articolo.prezzoLordo || 0;
+  const totale = roundTwo(prezzoLordo * (1 - sconto / 100));
+
+  const margine = articolo.margine || 0;
+  const conMargine = roundTwo(totale / (1 - margine / 100));
+
+  const granTotale = (conMargine + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0)) * (articolo.quantita || 1);
+  const granTotaleFinal = roundTwo(granTotale);
+
+  const row = document.querySelector(`#articoli-table tbody tr:nth-child(${index + 1})`);
+  row.cells[5].textContent = totale.toFixed(2) + "€";
+  row.cells[9].textContent = granTotaleFinal.toFixed(2) + "€";
+}
+
+function rimuoviArticolo(index) {
+  articoliAggiunti.splice(index, 1);
+  aggiornaTabellaArticoli();
+  aggiornaTotaliGenerali();
+}
+
+function aggiornaTotaliGenerali() {
+  let totaleSenzaServizi = 0;
+  let totaleConServizi = 0;
+
+  articoliAggiunti.forEach(articolo => {
+    const sconto = articolo.sconto || 0;
+    const prezzoScontato = articolo.prezzoLordo * (1 - sconto / 100);
+    const totale = roundTwo(prezzoScontato);
+
+    const margine = articolo.margine || 0;
+    const conMargine = totale / (1 - margine / 100);
+    const conMargineRounded = roundTwo(conMargine);
+    const quantita = articolo.quantita || 1;
+
+    totaleSenzaServizi += conMargineRounded * quantita;
+    totaleConServizi += (conMargineRounded + articolo.costoTrasporto + articolo.costoInstallazione) * quantita;
   });
 
-  document.getElementById("totaleNetto").textContent = netto.toFixed(2) + "€";
-  document.getElementById("totaleComplessivo").textContent = totale.toFixed(2) + "€";
+  let totaleDiv = document.getElementById("totaleGenerale");
+  if (!totaleDiv) {
+    totaleDiv = document.createElement("div");
+    totaleDiv.id = "totaleGenerale";
+    totaleDiv.style.padding = "1em";
+    document.getElementById("report-section").insertAdjacentElement("beforebegin", totaleDiv);
+  }
+
+  if (!autoPopolaCosti) {
+    totaleDiv.innerHTML = `<strong>Totale Netto (senza Trasporto/Installazione):</strong> ${totaleSenzaServizi.toFixed(2)}€`;
+  } else {
+    totaleDiv.innerHTML = `<strong>Totale Netto (senza Trasporto/Installazione):</strong> ${totaleSenzaServizi.toFixed(2)}€<br><strong>Totale Complessivo (inclusi Trasporto/Installazione):</strong> ${totaleConServizi.toFixed(2)}€`;
+  }
+}
+
+function generaReportTesto() {
+  let report = "Report Articoli:\n\n";
+  let totaleSenzaServizi = 0;
+  let totaleConServizi = 0;
+
+  const checkboxServizi = document.getElementById("toggleMostraServizi");
+  mostraDettagliServizi = checkboxServizi && checkboxServizi.checked;
+
+  articoliAggiunti.forEach((articolo, index) => {
+    const sconto = articolo.sconto || 0;
+    const prezzoScontato = articolo.prezzoLordo * (1 - sconto / 100);
+    const totale = roundTwo(prezzoScontato);
+
+    const margine = articolo.margine || 0;
+    const conMargine = totale / (1 - margine / 100);
+    const conMargineRounded = roundTwo(conMargine);
+
+    const quantita = articolo.quantita || 1;
+    const granTotale = (conMargineRounded + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0)) * quantita;
+    const granTotaleFinal = roundTwo(granTotale);
+
+    totaleSenzaServizi += conMargineRounded * quantita;
+    totaleConServizi += granTotaleFinal;
+
+    report += `${index + 1}. Codice: ${articolo.codice}\n`;
+    report += `Descrizione: ${articolo.descrizione}\n`;
+    report += `Prezzo netto (dopo sconto): ${totale.toFixed(2)}€\n`;
+    report += `Quantità: ${quantita}\n`;
+    if (mostraDettagliServizi && autoPopolaCosti) {
+      report += `Trasporto: ${articolo.costoTrasporto}€\n`;
+      report += `Installazione: ${articolo.costoInstallazione}€\n`;
+    }
+    report += `Totale: ${granTotaleFinal.toFixed(2)}€\n\n`;
+  });
+
+  report += `Totale Netto (senza Trasporto/Installazione): ${totaleSenzaServizi.toFixed(2)}€\n`;
+  if (autoPopolaCosti) {
+    report += `Totale Complessivo (inclusi Trasporto/Installazione): ${totaleConServizi.toFixed(2)}€`;
+  }
+
+  return report;
+}
+
+function inviaReportWhatsApp() {
+  const report = generaReportTesto();
+  const whatsappUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(report);
+  window.open(whatsappUrl, '_blank');
+}
+
+function generaPDFReport() {
+  const report = generaReportTesto();
+  const blob = new Blob([report], { type: "text/plain" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "report.txt";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+function generaReportTestoSenzaMargine() {
+  let report = "Report Articoli (senza Margine):\n\n";
+  let totaleSenzaServizi = 0;
+  let totaleConServizi = 0;
+
+  const checkboxServizi = document.getElementById("toggleMostraServizi");
+  const mostraServizi = checkboxServizi && checkboxServizi.checked;
+
+  articoliAggiunti.forEach((articolo, index) => {
+    const sconto = articolo.sconto || 0;
+    const prezzoLordo = articolo.prezzoLordo || 0;
+    const prezzoScontato = roundTwo(prezzoLordo * (1 - sconto / 100));
+    const quantita = articolo.quantita || 1;
+
+    const granTotale = (prezzoScontato + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0)) * quantita;
+    const granTotaleFinal = roundTwo(granTotale);
+
+    totaleSenzaServizi += prezzoScontato * quantita;
+    totaleConServizi += granTotaleFinal;
+
+    report += `${index + 1}. Codice: ${articolo.codice}\n`;
+    report += `Descrizione: ${articolo.descrizione}\n`;
+    report += `Prezzo netto (dopo sconto): ${prezzoScontato.toFixed(2)}€\n`;
+    report += `Quantità: ${quantita}\n`;
+    if (mostraServizi && autoPopolaCosti) {
+      report += `Trasporto: ${articolo.costoTrasporto}€\n`;
+      report += `Installazione: ${articolo.costoInstallazione}€\n`;
+    }
+    report += `Totale: ${granTotaleFinal.toFixed(2)}€\n\n`;
+  });
+
+  report += `Totale Netto (senza Trasporto/Installazione): ${totaleSenzaServizi.toFixed(2)}€\n`;
+  if (autoPopolaCosti) {
+    report += `Totale Complessivo (inclusi Trasporto/Installazione): ${totaleConServizi.toFixed(2)}€`;
+  }
+
+  return report;
+}
+
+function inviaReportWhatsAppSenzaMargine() {
+  const report = generaReportTestoSenzaMargine();
+  const whatsappUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(report);
+  window.open(whatsappUrl, '_blank');
+}
+
+function generaTXTReportSenzaMargine() {
+  const report = generaReportTestoSenzaMargine();
+  const blob = new Blob([report], { type: "text/plain" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "report_senza_margine.txt";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }

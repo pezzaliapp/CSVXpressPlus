@@ -1,40 +1,44 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CSVXpressPlus</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="style.css" />
-  <meta name="theme-color" content="#000000">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSVXpress</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <meta name="theme-color" content="#ffffff">
 </head>
 <body>
   <header>
-    <h1>CSVXpressPlus</h1>
+    <div class="logo-container">
+      <img src="icon/CSVXpress.png" alt="CSVXpress Logo" class="logo">
+      <h1>CSVXpress</h1>
+    </div>
   </header>
-
+  
   <main>
     <section id="upload-section">
-      <label for="csvFileInput">📁 Carica CSV:</label>
-      <input type="file" id="csvFileInput" accept=".csv" />
-      <p id="csvError" style="color:red;display:none;">Errore nel caricamento del CSV</p>
+      <h2>Carica Listino CSV</h2>
+      <input type="file" id="csvFileInput" accept=".csv">
+      <p id="csvError" style="color: red; display: none;">Errore nel caricamento del file CSV.</p>
     </section>
 
-    <section>
-      <label for="searchListino">🔎 Cerca:</label>
-      <input type="text" id="searchListino" placeholder="Codice o descrizione" />
+    <section id="listino-section">
+      <h2>Filtra e Seleziona Articolo dal Listino</h2>
+      <label for="searchListino">Cerca: </label>
+      <input type="text" id="searchListino" placeholder="Inserisci codice o descrizione">
       <select id="listinoSelect"></select>
-      <button onclick="aggiungiArticoloDaListino()">Aggiungi</button>
+      <button onclick="aggiungiArticoloDaListino()">Aggiungi Articolo Selezionato</button>
     </section>
 
-    <section>
+    <section id="articoli-section">
+      <h2>Articoli Aggiunti</h2>
       <table id="articoli-table" border="1">
         <thead>
           <tr>
             <th>Codice</th>
             <th>Descrizione</th>
-            <th>Prezzo</th>
+            <th>Prezzo Lordo</th>
             <th>Sconto %</th>
             <th>Margine %</th>
             <th>Totale</th>
@@ -50,13 +54,16 @@
     </section>
 
     <section id="report-section">
-      <button onclick="inviaReportWhatsApp()">WhatsApp</button>
-      <button onclick="generaPDFReport()">TXT</button>
-      <button onclick="inviaReportWhatsAppSenzaMargine()">WhatsApp senza margine</button>
-      <button onclick="generaTXTReportSenzaMargine()">TXT senza margine</button>
-    </section>
+  <h2>Report Articoli</h2>
+  <button onclick="inviaReportWhatsApp()">Invia Report su WhatsApp</button>
+  <button onclick="generaPDFReport()">Genera TXT Report</button>
+  <br><br>
+  <button onclick="inviaReportWhatsAppSenzaMargine()">Invia Report su WhatsApp Senza Margine</button>
+  <button onclick="generaTXTReportSenzaMargine()">Genera TXT Report Senza Margine</button>
+</section>
   </main>
-
+  
+  <!-- Librerie necessarie -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="app.js"></script>

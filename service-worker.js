@@ -1,13 +1,13 @@
 // service-worker.js
-const CACHE_NAME = 'csvxpressplus-v1';
+const CACHE_NAME = 'csvxpress-v1';
 const urlsToCache = [
   '/',
   '/index.html',
   '/style.css',
   '/app.js',
   '/manifest.json',
-  '/icon/CSVXpressPlus-192.png',
-  '/icon/CSVXpressPlus-512.png',
+  '/icon/CSVXpress-192.png',
+  '/icon/CSVXpress-512.png',
   'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js'
 ];
 
