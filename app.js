@@ -141,6 +141,9 @@ function aggiornaTabellaArticoli() {
     const granTotale = (conMargineRounded + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0)) * (articolo.quantita || 1);
     const granTotaleFinal = roundTwo(granTotale);
 
+    const venduto = articolo.venduto || 0;
+    const differenza = roundTwo(venduto - granTotaleFinal);
+
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${articolo.codice}</td>
@@ -153,6 +156,8 @@ function aggiornaTabellaArticoli() {
       <td><input type="number" value="${articolo.costoInstallazione}" placeholder="€" data-index="${index}" data-field="costoInstallazione" oninput="aggiornaCampo(event)" /></td>
       <td><input type="number" value="${articolo.quantita}" min="1" data-index="${index}" data-field="quantita" oninput="aggiornaCampo(event)" /></td>
       <td>${granTotaleFinal.toFixed(2)}€</td>
+      <td><input type="number" value="${venduto}" placeholder="€" data-index="${index}" data-field="venduto" oninput="aggiornaCampo(event)" /></td>
+      <td>${differenza.toFixed(2)}€</td>
       <td><button onclick="rimuoviArticolo(${index})">Rimuovi</button></td>
     `;
     tableBody.appendChild(row);
@@ -186,11 +191,14 @@ function aggiornaCalcoli(index) {
   const granTotale = (conMargine + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0)) * (articolo.quantita || 1);
   const granTotaleFinal = roundTwo(granTotale);
 
+  const venduto = articolo.venduto || 0;
+  const differenza = roundTwo(venduto - granTotaleFinal);
+
   const row = document.querySelector(`#articoli-table tbody tr:nth-child(${index + 1})`);
   row.cells[5].textContent = totale.toFixed(2) + "€";
   row.cells[9].textContent = granTotaleFinal.toFixed(2) + "€";
+  row.cells[11].textContent = differenza.toFixed(2) + "€";
 }
-
 function rimuoviArticolo(index) {
   articoliAggiunti.splice(index, 1);
   aggiornaTabellaArticoli();
