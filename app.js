@@ -242,6 +242,7 @@ function generaReportTesto() {
   let report = "Report Articoli:\n\n";
   let totaleSenzaServizi = 0;
   let totaleConServizi = 0;
+  let sommaDifferenze = 0;
 
   const checkboxServizi = document.getElementById("toggleMostraServizi");
   mostraDettagliServizi = checkboxServizi && checkboxServizi.checked;
@@ -259,6 +260,10 @@ function generaReportTesto() {
     const granTotale = (conMargineRounded + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0)) * quantita;
     const granTotaleFinal = roundTwo(granTotale);
 
+    const venduto = articolo.venduto || 0;
+    const differenza = roundTwo(venduto - granTotaleFinal);
+    sommaDifferenze += differenza;
+
     totaleSenzaServizi += conMargineRounded * quantita;
     totaleConServizi += granTotaleFinal;
 
@@ -270,17 +275,19 @@ function generaReportTesto() {
       report += `Trasporto: ${articolo.costoTrasporto}€\n`;
       report += `Installazione: ${articolo.costoInstallazione}€\n`;
     }
-    report += `Totale: ${granTotaleFinal.toFixed(2)}€\n\n`;
+    report += `Totale: ${granTotaleFinal.toFixed(2)}€\n`;
+    report += `Venduto A: ${venduto.toFixed(2)}€\n`;
+    report += `Differenza sconto: ${differenza.toFixed(2)}€\n\n`;
   });
 
   report += `Totale Netto (senza Trasporto/Installazione): ${totaleSenzaServizi.toFixed(2)}€\n`;
   if (autoPopolaCosti) {
-    report += `Totale Complessivo (inclusi Trasporto/Installazione): ${totaleConServizi.toFixed(2)}€`;
+    report += `Totale Complessivo (inclusi Trasporto/Installazione): ${totaleConServizi.toFixed(2)}€\n`;
   }
+  report += `Totale Differenza Sconto: ${sommaDifferenze.toFixed(2)}€`;
 
   return report;
 }
-
 function inviaReportWhatsApp() {
   const report = generaReportTesto();
   const whatsappUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(report);
