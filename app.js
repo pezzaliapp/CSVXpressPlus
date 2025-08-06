@@ -247,25 +247,25 @@ function mostraFormArticoloManuale() {
   const tableBody = document.querySelector("#articoli-table tbody");
 
   // Evita di creare più righe manuali
-  if (document.getElementById("manualRow")) return;
+  if (document.getElementById("manual-input-row")) return;
 
   const row = document.createElement("tr");
-  row.id = "manualRow";
+  row.id = "manual-input-row";
 
   row.innerHTML = `
-    <td><input type="text" id="manualCodice" placeholder="Codice"></td>
-    <td><input type="text" id="manualDescrizione" placeholder="Descrizione"></td>
-    <td><input type="number" id="manualPrezzo" placeholder="€"></td>
-    <td><input type="number" id="manualSconto1" placeholder="%" value="0"></td>
-    <td><input type="number" id="manualSconto2" placeholder="%" value="0"></td>
-    <td><input type="number" id="manualMargine" placeholder="%" value="0"></td>
-    <td>—</td>
-    <td><input type="number" id="manualTrasporto" placeholder="€" value="0"></td>
-    <td><input type="number" id="manualInstallazione" placeholder="€" value="0"></td>
-    <td><input type="number" id="manualQuantita" placeholder="1" value="1" min="1"></td>
-    <td>—</td>
-    <td>—</td>
-    <td>—</td>
+    <td><input type="text" id="manualCodice" placeholder="Codice" /></td>
+    <td><input type="text" id="manualDescrizione" placeholder="Descrizione" /></td>
+    <td><input type="number" id="manualPrezzo" placeholder="€" step="0.01" /></td>
+    <td><input type="number" id="manualSconto1" placeholder="%" value="0" step="0.01" /></td>
+    <td><input type="number" id="manualSconto2" placeholder="%" value="0" step="0.01" /></td>
+    <td><input type="number" id="manualMargine" placeholder="%" value="0" step="0.01" /></td>
+    <td><span id="manualTotale">—</span></td>
+    <td><input type="number" id="manualTrasporto" placeholder="€" value="0" step="0.01" /></td>
+    <td><input type="number" id="manualInstallazione" placeholder="€" value="0" step="0.01" /></td>
+    <td><input type="number" id="manualQuantita" placeholder="1" value="1" min="1" /></td>
+    <td><span id="manualGranTotale">—</span></td>
+    <td><input type="number" id="manualVenduto" placeholder="€" value="0" step="0.01" /></td>
+    <td><span id="manualDifferenza">—</span></td>
     <td>
       <button onclick="aggiungiArticoloManuale()">✅</button>
       <button onclick="annullaArticoloManuale()">❌</button>
@@ -273,6 +273,33 @@ function mostraFormArticoloManuale() {
   `;
 
   tableBody.appendChild(row);
+
+  [
+    "manualPrezzo", "manualSconto1", "manualSconto2", "manualMargine",
+    "manualTrasporto", "manualInstallazione", "manualQuantita", "manualVenduto"
+  ].forEach(id => {
+    document.getElementById(id).addEventListener("input", calcolaRigaManuale);
+  });
+}
+
+function calcolaRigaManuale() {
+  const prezzoLordo = parseFloat(document.getElementById("manualPrezzo").value) || 0;
+  const sconto1 = parseFloat(document.getElementById("manualSconto1").value) || 0;
+  const sconto2 = parseFloat(document.getElementById("manualSconto2").value) || 0;
+  const margine = parseFloat(document.getElementById("manualMargine").value) || 0;
+  const trasporto = parseFloat(document.getElementById("manualTrasporto").value) || 0;
+  const installazione = parseFloat(document.getElementById("manualInstallazione").value) || 0;
+  const quantita = parseInt(document.getElementById("manualQuantita").value) || 1;
+  const venduto = parseFloat(document.getElementById("manualVenduto").value) || 0;
+
+  const scontato = roundTwo(prezzoLordo * (1 - sconto1 / 100) * (1 - sconto2 / 100));
+  const conMargine = roundTwo(scontato / (1 - margine / 100));
+  const granTot = roundTwo((conMargine + trasporto + installazione) * quantita);
+  const differenza = roundTwo(venduto - granTot);
+
+  document.getElementById("manualTotale").textContent = scontato.toFixed(2) + "€";
+  document.getElementById("manualGranTotale").textContent = granTot.toFixed(2) + "€";
+  document.getElementById("manualDifferenza").textContent = differenza.toFixed(2) + "€";
 }
 
 function aggiungiArticoloManuale() {
@@ -285,7 +312,7 @@ function aggiungiArticoloManuale() {
   const costoTrasporto = parseFloat(document.getElementById("manualTrasporto").value) || 0;
   const costoInstallazione = parseFloat(document.getElementById("manualInstallazione").value) || 0;
   const quantita = parseInt(document.getElementById("manualQuantita").value) || 1;
-  const venduto = 0;
+  const venduto = parseFloat(document.getElementById("manualVenduto").value) || 0;
 
   const nuovoArticolo = {
     codice,
@@ -304,14 +331,13 @@ function aggiungiArticoloManuale() {
   aggiornaTabellaArticoli();
   aggiornaTotaliGenerali();
 
-  // Rimuovi la riga manuale
-  const manualRow = document.getElementById("manualRow");
-  if (manualRow) manualRow.remove();
+  // Rimuovi la riga manuale dopo aggiunta
+  annullaArticoloManuale();
 }
 
 function annullaArticoloManuale() {
-  const manualRow = document.getElementById("manualRow");
-  if (manualRow) manualRow.remove();
+  const row = document.getElementById("manual-input-row");
+  if (row) row.remove();
 }
 function generaReportTesto() {
   let report = "Report Articoli:\n\n";
