@@ -246,6 +246,43 @@ function aggiornaTotaliGenerali() {
 
   totaleDiv.innerHTML = html;
 }
+// 🔽 Funzioni per aggiunta manuale articoli
+
+function mostraFormArticoloManuale() {
+  const form = document.getElementById("manual-article-form");
+  form.style.display = form.style.display === "none" ? "block" : "none";
+}
+
+function aggiungiArticoloManuale() {
+  const codice = document.getElementById("manualCodice").value.trim();
+  const descrizione = document.getElementById("manualDescrizione").value.trim();
+  const prezzoLordo = parseFloat(document.getElementById("manualPrezzo").value) || 0;
+  const sconto = parseFloat(document.getElementById("manualSconto1").value) || 0;
+  const sconto2 = parseFloat(document.getElementById("manualSconto2").value) || 0;
+  const margine = parseFloat(document.getElementById("manualMargine").value) || 0;
+  const costoTrasporto = parseFloat(document.getElementById("manualTrasporto").value) || 0;
+  const costoInstallazione = parseFloat(document.getElementById("manualInstallazione").value) || 0;
+  const quantita = parseInt(document.getElementById("manualQuantita").value) || 1;
+  const venduto = 0;
+
+  const nuovoArticolo = {
+    codice,
+    descrizione,
+    prezzoLordo,
+    sconto,
+    sconto2,
+    margine,
+    costoTrasporto,
+    costoInstallazione,
+    quantita,
+    venduto
+  };
+
+  articoliAggiunti.push(nuovoArticolo);
+  aggiornaTabellaArticoli();
+  aggiornaTotaliGenerali();
+  mostraFormArticoloManuale();
+}
 function generaReportTesto() {
   let report = "Report Articoli:\n\n";
   let totaleSenzaServizi = 0;
