@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Strategie di Vendita</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 20px; }
+        h1 { color: #333; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        th { background-color: #eee; }
+        input, button { padding: 8px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Strategie di Vendita</h1>
+    <p>Carica il tuo file CSV con le colonne: <code>Codice,PrezzoNetto,Costo,TempoTrattativa,QuantitàMassima</code></p>
+    <input type="file" id="csvFile" accept=".csv" />
+    <button onclick="processCSV()">Simula Strategie</button>
+    <div id="output"></div>
+
+    <script>
+        function processCSV() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            if (!file) return alert("Seleziona un file CSV.");
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const lines = e.target.result.split('\n').filter(l => l.trim() !== '');
+                const header = lines[0].split(',').map(h => h.trim());
+                const rows = lines.slice(1).map(l => {
+                    const values = l.split(',');
+                    return {
+                        Codice: values[header.indexOf("Codice")],
+                        PrezzoNetto: parseFloat(values[header.indexOf("PrezzoNetto")]),
+                        Costo: parseFloat(values[header.indexOf("Costo")]),
+                        TempoTrattativa: parseFloat(values[header.indexOf("TempoTrattativa")]),
+                        QuantitàMassima: parseInt(values[header.indexOf("QuantitàMassima")])
+                    };
+                });
+
+                const tempoMax = 5;
+                let risultati = [];
+
+                function combinate(items, maxLen, prefix = []) {
+                    if (prefix.length === maxLen) {
+                        const utile = calcolaUtile(prefix, items);
+                        if (utile) risultati.push(utile);
+                        return;
+                    }
+                    for (let i = 0; i < items.length; i++) {
+                        combinate(items, maxLen, [...prefix, items[i].Codice]);
+                    }
+                }
+
+                function calcolaUtile(comb, items) {
+                    let tempo = 0, utile = 0;
+                    let quantita = {};
+                    for (let codice of comb) {
+                        const item = items.find(a => a.Codice === codice);
+                        if (!quantita[codice]) quantita[codice] = 0;
+                        if (quantita[codice] >= item.QuantitàMassima) return null;
+                        quantita[codice]++;
+                        tempo += item.TempoTrattativa;
+                        utile += item.PrezzoNetto - item.Costo;
+                    }
+                    if (tempo <= tempoMax) return { comb, utile, tempo };
+                    return null;
+                }
+
+                combinate(rows, 5);
+                risultati.sort((a, b) => b.utile - a.utile);
+                mostraRisultati(risultati.slice(0, 10));
+            };
+
+            reader.readAsText(file);
+        }
+
+        function mostraRisultati(risultati) {
+            let html = "<h2>Top 10 Strategie</h2><table><tr><th>#</th><th>Combinazione</th><th>Utile Netto (€)</th><th>Tempo Totale (h)</th></tr>";
+            risultati.forEach((r, i) => {
+                html += `<tr><td>${i+1}</td><td>${r.comb.join(" ➝ ")}</td><td>${r.utile.toFixed(2)}</td><td>${r.tempo.toFixed(2)}</td></tr>`;
+            });
+            html += "</table>";
+            document.getElementById("output").innerHTML = html;
+        }
+    </script>
+</body>
+</html>
