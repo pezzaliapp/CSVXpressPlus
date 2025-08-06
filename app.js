@@ -31,7 +31,6 @@ document.addEventListener("DOMContentLoaded", function () {
   `;
   document.getElementById("upload-section").appendChild(checkbox2);
 });
-
 function togglePopolaCosti() {
   autoPopolaCosti = document.getElementById("toggleCosti").checked;
   const secondCheckbox = document.getElementById("toggleMostraServizi");
@@ -39,20 +38,12 @@ function togglePopolaCosti() {
   mostraDettagliServizi = secondCheckbox.checked;
 
   articoliAggiunti = articoliAggiunti.map(articolo => {
-    if (autoPopolaCosti) {
-      const listinoOriginale = listino.find(item => item.codice === articolo.codice);
-      return {
-        ...articolo,
-        costoTrasporto: listinoOriginale ? listinoOriginale.costoTrasporto : 0,
-        costoInstallazione: listinoOriginale ? listinoOriginale.costoInstallazione : 0
-      };
-    } else {
-      return {
-        ...articolo,
-        costoTrasporto: 0,
-        costoInstallazione: 0
-      };
-    }
+    const listinoOriginale = listino.find(item => item.codice === articolo.codice);
+    return {
+      ...articolo,
+      costoTrasporto: autoPopolaCosti && listinoOriginale ? listinoOriginale.costoTrasporto : 0,
+      costoInstallazione: autoPopolaCosti && listinoOriginale ? listinoOriginale.costoInstallazione : 0
+    };
   });
 
   aggiornaTabellaArticoli();
@@ -76,6 +67,7 @@ function handleCSVUpload(event) {
         descrizione: (row["Descrizione"] || "").trim(),
         prezzoLordo: parseFloat((row["PrezzoLordo"] || "0").replace(",", ".")) || 0,
         sconto: 0,
+        sconto2: 0,
         margine: 0,
         costoTrasporto: parseFloat((row["CostoTrasporto"] || "0").replace(",", ".")) || 0,
         costoInstallazione: parseFloat((row["CostoInstallazione"] || "0").replace(",", ".")) || 0,
@@ -89,7 +81,6 @@ function handleCSVUpload(event) {
     }
   });
 }
-
 function aggiornaListinoSelect() {
   const select = document.getElementById("listinoSelect");
   const searchTerm = document.getElementById("searchListino").value.toLowerCase();
@@ -125,19 +116,20 @@ function aggiungiArticoloDaListino() {
   aggiornaTabellaArticoli();
   aggiornaTotaliGenerali();
 }
-
 function aggiornaTabellaArticoli() {
   const tableBody = document.querySelector("#articoli-table tbody");
   tableBody.innerHTML = "";
 
   articoliAggiunti.forEach((articolo, index) => {
-    const sconto = articolo.sconto || 0;
-    const prezzoScontato = articolo.prezzoLordo * (1 - sconto / 100);
+    const sconto1 = articolo.sconto || 0;
+    const sconto2 = articolo.sconto2 || 0;
+    const prezzoScontato = articolo.prezzoLordo * (1 - sconto1 / 100) * (1 - sconto2 / 100);
     const totale = roundTwo(prezzoScontato);
 
     const margine = articolo.margine || 0;
     const conMargine = totale / (1 - margine / 100);
     const conMargineRounded = roundTwo(conMargine);
+
     const granTotale = (conMargineRounded + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0)) * (articolo.quantita || 1);
     const granTotaleFinal = roundTwo(granTotale);
 
@@ -149,7 +141,8 @@ function aggiornaTabellaArticoli() {
       <td>${articolo.codice}</td>
       <td>${articolo.descrizione}</td>
       <td>${articolo.prezzoLordo}€</td>
-      <td><input type="number" value="${articolo.sconto}" placeholder="%" data-index="${index}" data-field="sconto" oninput="aggiornaCampo(event)" /></td>
+      <td><input type="number" value="${sconto1}" placeholder="%" data-index="${index}" data-field="sconto" oninput="aggiornaCampo(event)" /></td>
+      <td><input type="number" value="${sconto2}" placeholder="%" data-index="${index}" data-field="sconto2" oninput="aggiornaCampo(event)" /></td>
       <td><input type="number" value="${articolo.margine}" placeholder="%" data-index="${index}" data-field="margine" oninput="aggiornaCampo(event)" /></td>
       <td>${totale.toFixed(2)}€</td>
       <td><input type="number" value="${articolo.costoTrasporto}" placeholder="€" data-index="${index}" data-field="costoTrasporto" oninput="aggiornaCampo(event)" /></td>
@@ -163,28 +156,27 @@ function aggiornaTabellaArticoli() {
     tableBody.appendChild(row);
   });
 }
-
 function aggiornaCampo(event) {
   const input = event.target;
   const index = parseInt(input.getAttribute("data-index"));
   const field = input.getAttribute("data-field");
 
   let val = parseFloat(input.value.replace(",", ".")) || 0;
-  if ((field === "sconto" || field === "margine") && val < 0) val = 0;
+  if ((field === "sconto" || field === "sconto2" || field === "margine") && val < 0) val = 0;
   if (field === "quantita" && val < 1) val = 1;
 
   articoliAggiunti[index][field] = val;
   aggiornaCalcoli(index);
   aggiornaTotaliGenerali();
 }
-
 function aggiornaCalcoli(index) {
   const articolo = articoliAggiunti[index];
 
-  const sconto = articolo.sconto || 0;
+  const sconto1 = articolo.sconto || 0;
+  const sconto2 = articolo.sconto2 || 0;
   const prezzoLordo = articolo.prezzoLordo || 0;
-  const totale = roundTwo(prezzoLordo * (1 - sconto / 100));
 
+  const totale = roundTwo(prezzoLordo * (1 - sconto1 / 100) * (1 - sconto2 / 100));
   const margine = articolo.margine || 0;
   const conMargine = roundTwo(totale / (1 - margine / 100));
 
@@ -195,24 +187,29 @@ function aggiornaCalcoli(index) {
   const differenza = roundTwo(venduto - granTotaleFinal);
 
   const row = document.querySelector(`#articoli-table tbody tr:nth-child(${index + 1})`);
-  row.cells[5].textContent = totale.toFixed(2) + "€";
-  row.cells[9].textContent = granTotaleFinal.toFixed(2) + "€";
-  row.cells[11].textContent = differenza.toFixed(2) + "€";
+  row.cells[6].textContent = totale.toFixed(2) + "€";
+  row.cells[10].textContent = granTotaleFinal.toFixed(2) + "€";
+  row.cells[12].textContent = differenza.toFixed(2) + "€";
 }
 function rimuoviArticolo(index) {
   articoliAggiunti.splice(index, 1);
   aggiornaTabellaArticoli();
   aggiornaTotaliGenerali();
 }
-
+function rimuoviArticolo(index) {
+  articoliAggiunti.splice(index, 1);
+  aggiornaTabellaArticoli();
+  aggiornaTotaliGenerali();
+}
 function aggiornaTotaliGenerali() {
   let totaleSenzaServizi = 0;
   let totaleConServizi = 0;
   let totaleDifferenzaSconto = 0;
 
   articoliAggiunti.forEach(articolo => {
-    const sconto = articolo.sconto || 0;
-    const prezzoScontato = articolo.prezzoLordo * (1 - sconto / 100);
+    const sconto1 = articolo.sconto || 0;
+    const sconto2 = articolo.sconto2 || 0;
+    const prezzoScontato = articolo.prezzoLordo * (1 - sconto1 / 100) * (1 - sconto2 / 100);
     const totale = roundTwo(prezzoScontato);
 
     const margine = articolo.margine || 0;
@@ -243,7 +240,6 @@ function aggiornaTotaliGenerali() {
 
   totaleDiv.innerHTML = html;
 }
-
 function generaReportTesto() {
   let report = "Report Articoli:\n\n";
   let totaleSenzaServizi = 0;
@@ -254,8 +250,9 @@ function generaReportTesto() {
   mostraDettagliServizi = checkboxServizi && checkboxServizi.checked;
 
   articoliAggiunti.forEach((articolo, index) => {
-    const sconto = articolo.sconto || 0;
-    const prezzoScontato = articolo.prezzoLordo * (1 - sconto / 100);
+    const sconto1 = articolo.sconto || 0;
+    const sconto2 = articolo.sconto2 || 0;
+    const prezzoScontato = articolo.prezzoLordo * (1 - sconto1 / 100) * (1 - sconto2 / 100);
     const totale = roundTwo(prezzoScontato);
 
     const margine = articolo.margine || 0;
@@ -276,6 +273,8 @@ function generaReportTesto() {
     report += `${index + 1}. Codice: ${articolo.codice}\n`;
     report += `Descrizione: ${articolo.descrizione}\n`;
     report += `Prezzo netto (dopo sconto): ${totale.toFixed(2)}€\n`;
+    report += `Sconto 1: ${sconto1}%\n`;
+    report += `Sconto 2: ${sconto2}%\n`;
     report += `Quantità: ${quantita}\n`;
     if (mostraDettagliServizi && autoPopolaCosti) {
       report += `Trasporto: ${articolo.costoTrasporto}€\n`;
@@ -294,6 +293,7 @@ function generaReportTesto() {
 
   return report;
 }
+
 function inviaReportWhatsApp() {
   const report = generaReportTesto();
   const whatsappUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(report);
@@ -319,9 +319,10 @@ function generaReportTestoSenzaMargine() {
   const mostraServizi = checkboxServizi && checkboxServizi.checked;
 
   articoliAggiunti.forEach((articolo, index) => {
-    const sconto = articolo.sconto || 0;
+    const sconto1 = articolo.sconto || 0;
+    const sconto2 = articolo.sconto2 || 0;
     const prezzoLordo = articolo.prezzoLordo || 0;
-    const prezzoScontato = roundTwo(prezzoLordo * (1 - sconto / 100));
+    const prezzoScontato = roundTwo(prezzoLordo * (1 - sconto1 / 100) * (1 - sconto2 / 100));
     const quantita = articolo.quantita || 1;
 
     const granTotale = (prezzoScontato + (articolo.costoTrasporto || 0) + (articolo.costoInstallazione || 0)) * quantita;
@@ -333,6 +334,8 @@ function generaReportTestoSenzaMargine() {
     report += `${index + 1}. Codice: ${articolo.codice}\n`;
     report += `Descrizione: ${articolo.descrizione}\n`;
     report += `Prezzo netto (dopo sconto): ${prezzoScontato.toFixed(2)}€\n`;
+    report += `Sconto 1: ${sconto1}%\n`;
+    report += `Sconto 2: ${sconto2}%\n`;
     report += `Quantità: ${quantita}\n`;
     if (mostraServizi && autoPopolaCosti) {
       report += `Trasporto: ${articolo.costoTrasporto}€\n`;
@@ -344,7 +347,6 @@ function generaReportTestoSenzaMargine() {
   report += `Totale Netto (senza Trasporto/Installazione): ${totaleSenzaServizi.toFixed(2)}€\n`;
   if (autoPopolaCosti) {
     report += `Totale Complessivo (inclusi Trasporto/Installazione): ${totaleConServizi.toFixed(2)}€`;
-  }
 
   return report;
 }
