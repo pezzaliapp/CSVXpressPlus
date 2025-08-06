@@ -346,11 +346,11 @@ function generaReportTestoSenzaMargine() {
 
   report += `Totale Netto (senza Trasporto/Installazione): ${totaleSenzaServizi.toFixed(2)}€\n`;
   if (autoPopolaCosti) {
-    report += `Totale Complessivo (inclusi Trasporto/Installazione): ${totaleConServizi.toFixed(2)}€`;
+    report += `Totale Complessivo (inclusi Trasporto/Installazione): ${totaleConServizi.toFixed(2)}€\n`;
+  }
 
   return report;
 }
-
 function inviaReportWhatsAppSenzaMargine() {
   const report = generaReportTestoSenzaMargine();
   const whatsappUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(report);
