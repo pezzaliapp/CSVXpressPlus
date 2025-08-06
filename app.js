@@ -202,9 +202,11 @@ function rimuoviArticolo(index) {
   aggiornaTabellaArticoli();
   aggiornaTotaliGenerali();
 }
+
 function aggiornaTotaliGenerali() {
   let totaleSenzaServizi = 0;
   let totaleConServizi = 0;
+  let totaleVenduto = 0;
   let totaleDifferenzaSconto = 0;
 
   articoliAggiunti.forEach(articolo => {
@@ -224,6 +226,7 @@ function aggiornaTotaliGenerali() {
 
     totaleSenzaServizi += conMargineRounded * quantita;
     totaleConServizi += roundTwo(granTot);
+    totaleVenduto += venduto;
     totaleDifferenzaSconto += roundTwo(differenza);
   });
 
@@ -237,10 +240,12 @@ function aggiornaTotaliGenerali() {
 
   let html = `<strong>Totale Netto (senza Trasporto/Installazione):</strong> ${totaleSenzaServizi.toFixed(2)}€<br>`;
   html += `<strong>Totale Complessivo (inclusi Trasporto/Installazione):</strong> ${totaleConServizi.toFixed(2)}€<br>`;
+  html += `<strong>Totale Venduto:</strong> ${totaleVenduto.toFixed(2)}€<br>`;
   html += `<strong>Totale Differenza Sconto:</strong> ${totaleDifferenzaSconto.toFixed(2)}€`;
 
   totaleDiv.innerHTML = html;
 }
+
 // 🔽 Funzioni per aggiunta manuale articoli
 
 function mostraFormArticoloManuale() {
