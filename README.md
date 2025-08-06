@@ -13,6 +13,8 @@ CSVXpressPlus è una **PWA (Progressive Web App)** sviluppata per gestire e filt
 - ➕ **Aggiunta di articoli alla tabella** con dettagli personalizzabili.
 - 📉 **Doppio sconto in cascata**: applicazione di due sconti successivi.
 - 📊 **Calcolo automatico di prezzi** con gestione di sconto 1, sconto 2, margine, trasporto e installazione.
+- ⚙️ **Popola automaticamente Trasporto e Installazione**: puoi attivare o disattivare il riempimento automatico di questi valori dai dati CSV.
+- 👀 **Mostra dettagli Trasporto/Installazione nel report**: scegli se includere o meno questi dati nei report generati.
 - 📱 **PWA installabile** su PC e smartphone per un utilizzo rapido ovunque.
 - 📤 **Generazione report** e invio tramite WhatsApp o salvataggio in TXT.
 
@@ -63,13 +65,21 @@ CSVXpressPlus calcola anche la **differenza tra il prezzo venduto** (inserito ma
 4. Totale finale (×2 pezzi):  
    `1.055,88 × 2 = 2.111,76 €`
 
-### 💼 Esempio 2 – Calcolo provvigione da differenza sconto
+### 💼 Esempio 2 – Calcolo provvigione da differenza sconto positiva
 
-**Prezzo Venduto:** 2.400 €
+**Prezzo Venduto:** 2.400 €  
 **Totale calcolato dalla app:** 2.111,76 €
 
 **Differenza:**  
 `2.400 - 2.111,76 = 288,24 €` → può essere interpretata come **provvigione o utile netto**.
+
+### ❗ Esempio 3 – Calcolo con differenza sconto negativa
+
+**Prezzo Venduto:** 2.000 €  
+**Totale calcolato dalla app:** 2.111,76 €
+
+**Differenza:**  
+`2.000 - 2.111,76 = -111,76 €` → indica una **perdita o sconto eccessivo** da monitorare.
 
 ---
 
