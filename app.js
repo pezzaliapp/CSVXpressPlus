@@ -17,7 +17,7 @@ function roundTwo(num) {
 
 document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("csvFileInput").addEventListener("change", handleCSVUpload);
-  document.getElementById("searchListino").addEventListener("input", aggiornaListinoSelect);
+    document.getElementById("searchListino").addEventListener("input", aggiornaListinoSelect);
 
   const checkbox1 = document.createElement("label");
   checkbox1.innerHTML = `
@@ -30,6 +30,12 @@ document.addEventListener("DOMContentLoaded", function () {
     <br><input type="checkbox" id="toggleMostraServizi" checked> Mostra dettagli Trasporto/Installazione nel report
   `;
   document.getElementById("upload-section").appendChild(checkbox2);
+
+  // ⬇️ aggiornato 6.08.25 QUESTA PARTE:
+  const manualButton = document.createElement("button");
+  manualButton.textContent = "Aggiungi Articolo Manualmente";
+  manualButton.onclick = mostraFormArticoloManuale;
+  document.getElementById("listino-section").appendChild(manualButton);
 });
 function togglePopolaCosti() {
   autoPopolaCosti = document.getElementById("toggleCosti").checked;
