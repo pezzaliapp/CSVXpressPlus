@@ -202,11 +202,6 @@ function rimuoviArticolo(index) {
   aggiornaTabellaArticoli();
   aggiornaTotaliGenerali();
 }
-function rimuoviArticolo(index) {
-  articoliAggiunti.splice(index, 1);
-  aggiornaTabellaArticoli();
-  aggiornaTotaliGenerali();
-}
 function aggiornaTotaliGenerali() {
   let totaleSenzaServizi = 0;
   let totaleConServizi = 0;
