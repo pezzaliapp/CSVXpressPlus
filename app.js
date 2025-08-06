@@ -244,8 +244,35 @@ function aggiornaTotaliGenerali() {
 // 🔽 Funzioni per aggiunta manuale articoli
 
 function mostraFormArticoloManuale() {
-  const form = document.getElementById("manual-article-form");
-  form.style.display = form.style.display === "none" ? "block" : "none";
+  const tableBody = document.querySelector("#articoli-table tbody");
+
+  // Evita di creare più righe manuali
+  if (document.getElementById("manualRow")) return;
+
+  const row = document.createElement("tr");
+  row.id = "manualRow";
+
+  row.innerHTML = `
+    <td><input type="text" id="manualCodice" placeholder="Codice"></td>
+    <td><input type="text" id="manualDescrizione" placeholder="Descrizione"></td>
+    <td><input type="number" id="manualPrezzo" placeholder="€"></td>
+    <td><input type="number" id="manualSconto1" placeholder="%" value="0"></td>
+    <td><input type="number" id="manualSconto2" placeholder="%" value="0"></td>
+    <td><input type="number" id="manualMargine" placeholder="%" value="0"></td>
+    <td>—</td>
+    <td><input type="number" id="manualTrasporto" placeholder="€" value="0"></td>
+    <td><input type="number" id="manualInstallazione" placeholder="€" value="0"></td>
+    <td><input type="number" id="manualQuantita" placeholder="1" value="1" min="1"></td>
+    <td>—</td>
+    <td>—</td>
+    <td>—</td>
+    <td>
+      <button onclick="aggiungiArticoloManuale()">✅</button>
+      <button onclick="annullaArticoloManuale()">❌</button>
+    </td>
+  `;
+
+  tableBody.appendChild(row);
 }
 
 function aggiungiArticoloManuale() {
@@ -276,7 +303,15 @@ function aggiungiArticoloManuale() {
   articoliAggiunti.push(nuovoArticolo);
   aggiornaTabellaArticoli();
   aggiornaTotaliGenerali();
-  mostraFormArticoloManuale();
+
+  // Rimuovi la riga manuale
+  const manualRow = document.getElementById("manualRow");
+  if (manualRow) manualRow.remove();
+}
+
+function annullaArticoloManuale() {
+  const manualRow = document.getElementById("manualRow");
+  if (manualRow) manualRow.remove();
 }
 function generaReportTesto() {
   let report = "Report Articoli:\n\n";
