@@ -13,8 +13,9 @@ CSVXpressPlus è una **PWA (Progressive Web App)** sviluppata per gestire e filt
 - ➕ **Aggiunta di articoli alla tabella** con dettagli personalizzabili.
 - 📉 **Doppio sconto in cascata**: applicazione di due sconti successivi.
 - 📊 **Calcolo automatico di prezzi** con gestione di sconto 1, sconto 2, margine, trasporto e installazione.
-- ⚙️ **Popola automaticamente Trasporto e Installazione**: puoi attivare o disattivare il riempimento automatico di questi valori dai dati CSV.
-- 👀 **Mostra dettagli Trasporto/Installazione nel report**: scegli se includere o meno questi dati nei report generati.
+- 🧮 **Gestione venduto a € e calcolo differenza sconto** (utile per provvigioni o valutazione utile netto).
+- ⚙️ **Popolamento automatico di Trasporto e Installazione** (opzionale).
+- 📄 **Dettagli Trasporto/Installazione inclusi nei report** (opzionale).
 - 📱 **PWA installabile** su PC e smartphone per un utilizzo rapido ovunque.
 - 📤 **Generazione report** e invio tramite WhatsApp o salvataggio in TXT.
 
@@ -65,21 +66,21 @@ CSVXpressPlus calcola anche la **differenza tra il prezzo venduto** (inserito ma
 4. Totale finale (×2 pezzi):  
    `1.055,88 × 2 = 2.111,76 €`
 
-### 💼 Esempio 2 – Calcolo provvigione da differenza sconto positiva
+### 💼 Esempio 2 – Provvigione positiva da differenza sconto
 
 **Prezzo Venduto:** 2.400 €  
 **Totale calcolato dalla app:** 2.111,76 €
 
 **Differenza:**  
-`2.400 - 2.111,76 = 288,24 €` → può essere interpretata come **provvigione o utile netto**.
+`2.400 - 2.111,76 = +288,24 €` → interpretabile come **provvigione o utile netto positivo**
 
-### ❗ Esempio 3 – Calcolo con differenza sconto negativa
+### 💼 Esempio 3 – Provvigione negativa (venduto inferiore al calcolato)
 
-**Prezzo Venduto:** 2.000 €  
+**Prezzo Venduto:** 1.900 €  
 **Totale calcolato dalla app:** 2.111,76 €
 
 **Differenza:**  
-`2.000 - 2.111,76 = -111,76 €` → indica una **perdita o sconto eccessivo** da monitorare.
+`1.900 - 2.111,76 = -211,76 €` → **offerta in perdita o da rinegoziare**
 
 ---
 
@@ -114,6 +115,25 @@ I valori numerici possono usare virgola o punto decimale. Gli sconti vengono ges
 
 ## 📬 **Contatti**
 
-Progetto open source by [Alessandro Pezzali](https://www.pezzaliapp.com)
-
+Progetto open source by [Alessandro Pezzali](https://www.pezzaliapp.com)  
 Condiviso su GitHub per migliorare la vita a chi lavora ogni giorno con listini e preventivi.
+
+---
+
+## 📄 **Licenza MIT**
+
+Questo progetto è rilasciato sotto licenza [MIT](https://opensource.org/licenses/MIT).  
+
+**Cosa puoi fare:**
+- ✅ Usarlo liberamente per fini personali o commerciali
+- ✅ Modificarlo secondo le tue esigenze
+- ✅ Redistribuirlo con o senza modifiche
+
+**Cosa è richiesto:**
+- 📝 Includere sempre una copia della licenza MIT originale nei tuoi progetti derivati
+- 💬 Dare credito all'autore originale (Alessandro Pezzali) nelle distribuzioni
+
+**Cosa non è permesso:**
+- ❌ Utilizzarlo per scopi ingannevoli, fraudolenti o lesivi di altri
+
+Utilizzando questo software accetti i termini della licenza. Se crei una versione modificata, contribuisci con un *fork* o una *pull request* per supportare la community.
