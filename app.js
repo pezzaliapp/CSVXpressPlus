@@ -349,6 +349,7 @@ function generaReportTesto() {
   let totaleSenzaServizi = 0;
   let totaleConServizi = 0;
   let sommaDifferenze = 0;
+  let totaleVenduto = 0;
 
   const checkboxServizi = document.getElementById("toggleMostraServizi");
   mostraDettagliServizi = checkboxServizi && checkboxServizi.checked;
@@ -369,8 +370,9 @@ function generaReportTesto() {
 
     const venduto = articolo.venduto || 0;
     const differenza = roundTwo(venduto - granTotaleFinal);
-    sommaDifferenze += differenza;
 
+    sommaDifferenze += differenza;
+    totaleVenduto += venduto;
     totaleSenzaServizi += conMargineRounded * quantita;
     totaleConServizi += granTotaleFinal;
 
@@ -393,6 +395,7 @@ function generaReportTesto() {
   if (autoPopolaCosti) {
     report += `Totale Complessivo (inclusi Trasporto/Installazione): ${totaleConServizi.toFixed(2)}€\n`;
   }
+  report += `Totale Venduto: ${totaleVenduto.toFixed(2)}€\n`;
   report += `Totale Differenza Sconto: ${sommaDifferenze.toFixed(2)}€`;
 
   return report;
@@ -414,10 +417,12 @@ function generaPDFReport() {
   link.click();
   document.body.removeChild(link);
 }
+
 function generaReportTestoSenzaMargine() {
   let report = "Report Articoli (senza Margine):\n\n";
   let totaleSenzaServizi = 0;
   let totaleConServizi = 0;
+  let totaleVenduto = 0;
 
   const checkboxServizi = document.getElementById("toggleMostraServizi");
   const mostraServizi = checkboxServizi && checkboxServizi.checked;
@@ -434,6 +439,7 @@ function generaReportTestoSenzaMargine() {
 
     totaleSenzaServizi += prezzoScontato * quantita;
     totaleConServizi += granTotaleFinal;
+    totaleVenduto += articolo.venduto || 0;
 
     report += `${index + 1}. Codice: ${articolo.codice}\n`;
     report += `Descrizione: ${articolo.descrizione}\n`;
@@ -452,9 +458,11 @@ function generaReportTestoSenzaMargine() {
   if (autoPopolaCosti) {
     report += `Totale Complessivo (inclusi Trasporto/Installazione): ${totaleConServizi.toFixed(2)}€\n`;
   }
+  report += `Totale Venduto: ${totaleVenduto.toFixed(2)}€\n`;
 
   return report;
 }
+
 function inviaReportWhatsAppSenzaMargine() {
   const report = generaReportTestoSenzaMargine();
   const whatsappUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(report);
