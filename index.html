@@ -1,12 +1,29 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" data-app="CSVXpressPlus" data-ver="2.6.1">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>CSVXpressPlus</title>
+
+  <!-- PWA -->
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
   <meta name="theme-color" content="#ffffff">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-QZ7CQDJX3E"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-QZ7CQDJX3E', {
+      anonymize_ip: true
+    });
+  </script>
 </head>
 <body>
   <header>
