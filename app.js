@@ -17,7 +17,7 @@ function roundTwo(num) {
 
 document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("csvFileInput").addEventListener("change", handleCSVUpload);
-    document.getElementById("searchListino").addEventListener("input", aggiornaListinoSelect);
+  document.getElementById("searchListino").addEventListener("input", aggiornaListinoSelect);
 
   const checkbox1 = document.createElement("label");
   checkbox1.innerHTML = `
@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
   manualButton.onclick = mostraFormArticoloManuale;
   document.getElementById("listino-section").appendChild(manualButton);
 });
+
 function togglePopolaCosti() {
   autoPopolaCosti = document.getElementById("toggleCosti").checked;
   const secondCheckbox = document.getElementById("toggleMostraServizi");
@@ -60,14 +61,24 @@ function handleCSVUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
 
+  // TRACK: upload start + ok
+  window.track?.csv_upload_start({ method: 'file_input' });
+  window.track?.csv_upload_ok({ method: 'file_input', file });
+
+  const t0 = performance.now();
+
   Papa.parse(file, {
     header: true,
     skipEmptyLines: true,
     complete: function(results) {
+      const ms = Math.round(performance.now() - t0);
+
       if (!results.data.length) {
         document.getElementById("csvError").style.display = "block";
+        window.track?.csv_parse_error({ code: 'empty_or_no_rows', ms });
         return;
       }
+
       listino = results.data.map(row => ({
         codice: (row["Codice"] || "").trim(),
         descrizione: (row["Descrizione"] || "").trim(),
@@ -79,14 +90,25 @@ function handleCSVUpload(event) {
         costoInstallazione: parseFloat((row["CostoInstallazione"] || "0").replace(",", ".")) || 0,
         quantita: 1
       }));
+
+      const rows = listino.length;
+      const cols = Array.isArray(results.meta?.fields) ? results.meta.fields.length : undefined;
+
+      // TRACK: parse ok
+      window.track?.csv_parse_ok({ rows, cols, ms });
+
+      document.getElementById("csvError").style.display = "none";
       aggiornaListinoSelect();
     },
     error: function(err) {
+      const ms = Math.round(performance.now() - t0);
       console.error("Errore CSV:", err);
       document.getElementById("csvError").style.display = "block";
+      window.track?.csv_parse_error({ code: 'papaparse_error', ms });
     }
   });
 }
+
 function aggiornaListinoSelect() {
   const select = document.getElementById("listinoSelect");
   const searchTerm = document.getElementById("searchListino").value.toLowerCase();
@@ -103,6 +125,8 @@ function aggiornaListinoSelect() {
 }
 
 function aggiungiArticoloDaListino() {
+  window.track?.add_item_listino();
+
   const select = document.getElementById("listinoSelect");
   if (!select.value) return;
 
@@ -122,6 +146,7 @@ function aggiungiArticoloDaListino() {
   aggiornaTabellaArticoli();
   aggiornaTotaliGenerali();
 }
+
 function aggiornaTabellaArticoli() {
   const tableBody = document.querySelector("#articoli-table tbody");
   tableBody.innerHTML = "";
@@ -162,6 +187,7 @@ function aggiornaTabellaArticoli() {
     tableBody.appendChild(row);
   });
 }
+
 function aggiornaCampo(event) {
   const input = event.target;
   const index = parseInt(input.getAttribute("data-index"));
@@ -175,6 +201,7 @@ function aggiornaCampo(event) {
   aggiornaCalcoli(index);
   aggiornaTotaliGenerali();
 }
+
 function aggiornaCalcoli(index) {
   const articolo = articoliAggiunti[index];
 
@@ -197,7 +224,10 @@ function aggiornaCalcoli(index) {
   row.cells[10].textContent = granTotaleFinal.toFixed(2) + "€";
   row.cells[12].textContent = differenza.toFixed(2) + "€";
 }
+
 function rimuoviArticolo(index) {
+  window.track?.remove_item();
+
   articoliAggiunti.splice(index, 1);
   aggiornaTabellaArticoli();
   aggiornaTotaliGenerali();
@@ -308,6 +338,8 @@ function calcolaRigaManuale() {
 }
 
 function aggiungiArticoloManuale() {
+  window.track?.add_item_manual();
+
   const codice = document.getElementById("manualCodice").value.trim();
   const descrizione = document.getElementById("manualDescrizione").value.trim();
   const prezzoLordo = parseFloat(document.getElementById("manualPrezzo").value) || 0;
@@ -344,6 +376,7 @@ function annullaArticoloManuale() {
   const row = document.getElementById("manual-input-row");
   if (row) row.remove();
 }
+
 function generaReportTesto() {
   let report = "Report Articoli:\n\n";
   let totaleSenzaServizi = 0;
@@ -402,12 +435,16 @@ function generaReportTesto() {
 }
 
 function inviaReportWhatsApp() {
+  window.track?.report_whatsapp({ variant: 'standard' });
+
   const report = generaReportTesto();
   const whatsappUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(report);
   window.open(whatsappUrl, '_blank');
 }
 
 function generaPDFReport() {
+  window.track?.csv_export({ format: 'txt_standard' });
+
   const report = generaReportTesto();
   const blob = new Blob([report], { type: "text/plain" });
   const link = document.createElement("a");
@@ -464,12 +501,16 @@ function generaReportTestoSenzaMargine() {
 }
 
 function inviaReportWhatsAppSenzaMargine() {
+  window.track?.report_whatsapp({ variant: 'no_margin' });
+
   const report = generaReportTestoSenzaMargine();
   const whatsappUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(report);
   window.open(whatsappUrl, '_blank');
 }
 
 function generaTXTReportSenzaMargine() {
+  window.track?.csv_export({ format: 'txt_no_margin' });
+
   const report = generaReportTestoSenzaMargine();
   const blob = new Blob([report], { type: "text/plain" });
   const link = document.createElement("a");
